@@ -3,7 +3,7 @@
   "ui": "tui",
   "globalDependencies": ["tsconfig.json"],
   "globalEnv": ["NODE_ENV", "NEXT_PUBLIC_*"],
-  "tasks": {
+  "pipeline": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*", "src/**", "bin/**"],
@@ -13,6 +13,9 @@
         "dist/**",
         "public/_pagefind/**"
       ]
+    },
+    "//#examples/minimal-mdxe-example#build": {
+      "dependsOn": ["build"]
     },
     "lint": {
       "dependsOn": ["^lint"]
