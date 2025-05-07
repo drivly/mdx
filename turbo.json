@@ -1,7 +1,6 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
-  "globalEnv": ["TAILWIND_CONFIG_PATH", "MDX_COMPONENTS_PATH"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

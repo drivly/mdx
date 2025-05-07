@@ -36,63 +36,60 @@ const findConfigFile = (dir, filename) => {
   return existsSync(configPath) ? configPath : null
 }
 
-const ensureConfigFiles = async () => {
-  const configFiles = [
-    { src: '../src/config/next.config.js', dest: 'next.config.js' },
-    { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
-    { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' }
-  ]
-
-  const fs = await import('fs/promises')
-  
-  const packageConfigDir = join(__dirname, '../.config')
-  
-  await fs.mkdir(packageConfigDir, { recursive: true })
-  
-  for (const { src, dest } of configFiles) {
-    const sourcePath = join(__dirname, src)
-    const destPath = join(packageConfigDir, dest)
-    
-    if (!existsSync(destPath)) {
-      await fs.copyFile(sourcePath, destPath)
-    }
-  }
-  
-  return packageConfigDir
-}
-
 const runNextCommand = async (command, args = []) => {
-  const configDir = await ensureConfigFiles()
-  const nextBin = resolve(process.cwd(), 'node_modules', '.bin', 'next')
-  const nextExists = existsSync(nextBin)
+  const userCwd = process.cwd()
+  const mdxeDir = join(__dirname, '..')
   
-  const configArgs = [
-    `--config=${join(configDir, 'next.config.js')}`,
-  ]
-  
-  const binPath = nextExists ? nextBin : 'npx next'
-  const cmd = nextExists ? binPath : 'npx'
-  const cmdArgs = nextExists ? 
-    [command, ...configArgs, ...args] : 
-    ['next', command, ...configArgs, ...args]
-  
-  process.env.TAILWIND_CONFIG_PATH = join(configDir, 'tailwind.config.js')
-  process.env.MDX_COMPONENTS_PATH = join(configDir, 'mdx-components.js')
-  
-  const child = spawn(cmd, cmdArgs, { 
-    stdio: 'inherit',
-    shell: true,
-    env: { ...process.env }
-  })
-  
-  child.on('error', (error) => {
-    console.error(`Error executing command: ${error.message}`)
+  try {
+    const nextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
+    const nextExists = existsSync(nextBin)
+
+    const configFiles = [
+      { src: '../src/config/next.config.js', dest: 'next.config.js' },
+      { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
+      { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' }
+    ]
+    
+    const fs = await import('fs/promises')
+    
+    for (const { src, dest } of configFiles) {
+      const sourcePath = join(__dirname, src)
+      const destPath = join(mdxeDir, dest)
+      
+      if (!existsSync(destPath)) {
+        await fs.copyFile(sourcePath, destPath)
+      }
+    }
+    
+    process.env.USER_PROJECT_DIR = userCwd
+    
+    process.chdir(mdxeDir)
+    
+    const binPath = nextExists ? nextBin : 'npx next'
+    const cmd = nextExists ? binPath : 'npx'
+    const cmdArgs = nextExists ? [command, ...args] : ['next', command, ...args]
+    
+    const child = spawn(cmd, cmdArgs, { 
+      stdio: 'inherit',
+      shell: true,
+      env: { ...process.env }
+    })
+    
+    child.on('error', (error) => {
+      process.chdir(userCwd)
+      console.error(`Error executing command: ${error.message}`)
+      process.exit(1)
+    })
+    
+    child.on('close', (code) => {
+      process.chdir(userCwd)
+      process.exit(code)
+    })
+  } catch (error) {
+    process.chdir(userCwd)
+    console.error(`Error: ${error.message}`)
     process.exit(1)
-  })
-  
-  child.on('close', (code) => {
-    process.exit(code)
-  })
+  }
 }
 
 program
