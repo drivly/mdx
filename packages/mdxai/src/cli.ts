@@ -4,6 +4,15 @@ import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
 
+interface MDXAIOptions {
+  apiKey?: string;
+  model?: string;
+  outputDir?: string;
+  templates?: Record<string, unknown>;
+  mode?: 'generate' | 'edit';
+  [key: string]: unknown;
+}
+
 export class CLI {
   async init() {
     console.log('Initializing mdxai configuration...');
@@ -23,7 +32,7 @@ export class CLI {
     }
   }
   
-  async generate(targetPath, options = {}) {
+  async generate(targetPath: string, options: MDXAIOptions = {}) {
     if (!targetPath) {
       throw new Error('Path is required for generate command');
     }
@@ -48,7 +57,7 @@ export class CLI {
     }
   }
   
-  async edit(targetPath, options = {}) {
+  async edit(targetPath: string, options: MDXAIOptions = {}) {
     if (!targetPath) {
       throw new Error('Path is required for edit command');
     }
@@ -73,7 +82,7 @@ export class CLI {
     }
   }
   
-  async batch(pattern, options = {}) {
+  async batch(pattern: string, options: MDXAIOptions = {}) {
     if (!pattern) {
       throw new Error('Pattern is required for batch command');
     }
@@ -100,7 +109,7 @@ export class CLI {
     }
   }
   
-  private async findMdxFiles(directory) {
+  private async findMdxFiles(directory: string) {
     try {
       const pattern = path.join(directory, '**/*.mdx');
       const files = await glob(pattern);
