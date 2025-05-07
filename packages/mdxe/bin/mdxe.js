@@ -82,12 +82,26 @@ const runNextCommand = async (command, args = []) => {
   try {
     await ensureConfigFiles(userCwd)
     
-    const nextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
-    const nextExists = existsSync(nextBin)
+    const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
+    const mdxeNextBin = resolve(__dirname, '..', 'node_modules', '.bin', 'next')
     
-    const binPath = nextExists ? nextBin : 'npx next'
-    const cmd = nextExists ? binPath : 'npx'
-    const cmdArgs = nextExists ? [command, ...args] : ['next', command, ...args]
+    const localNextExists = existsSync(localNextBin)
+    const mdxeNextExists = existsSync(mdxeNextBin)
+    
+    let binPath, cmd, cmdArgs
+    
+    if (localNextExists) {
+      binPath = localNextBin
+      cmd = binPath
+      cmdArgs = [command, ...args]
+    } else if (mdxeNextExists) {
+      binPath = mdxeNextBin
+      cmd = binPath
+      cmdArgs = [command, ...args]
+    } else {
+      cmd = 'npx'
+      cmdArgs = ['next', command, ...args]
+    }
     
     const child = spawn(cmd, cmdArgs, { 
       stdio: 'inherit',
