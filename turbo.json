@@ -3,7 +3,7 @@
   "ui": "tui",
   "globalDependencies": ["tsconfig.json"],
   "globalEnv": ["NODE_ENV", "NEXT_PUBLIC_*"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*", "src/**", "bin/**"],
