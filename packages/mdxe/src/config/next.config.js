@@ -1,7 +1,4 @@
 import nextra from 'nextra'
-import { join } from 'path'
-
-/* global process */
 
 const withNextra = nextra({
   mdxOptions: {
@@ -15,13 +12,13 @@ export default withNextra({
   swcMinify: true,
   postcssOptions: {
     plugins: {
-      tailwindcss: { config: process.env.TAILWIND_CONFIG_PATH },
+      tailwindcss: {},
       autoprefixer: {},
     },
   },
   turbopack: {
     resolveAlias: {
-      'next-mdx-import-source-file': process.env.MDX_COMPONENTS_PATH || './mdx-components.js'
+      'next-mdx-import-source-file': './mdx-components.js'
     }
   }
 })

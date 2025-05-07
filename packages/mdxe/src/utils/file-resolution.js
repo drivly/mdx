@@ -48,7 +48,7 @@ export const findIndexFile = (dir) => {
  * @returns {string|null} - Resolved path or null if not found
  */
 export const resolvePath = (path) => {
-  const absolutePath = resolve(process.env.USER_PROJECT_DIR || process.cwd(), path)
+  const absolutePath = resolve(process.cwd(), path)
   
   if (!existsSync(absolutePath)) {
     const withMdx = `${absolutePath}.mdx`
