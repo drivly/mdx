@@ -44,7 +44,7 @@ function processFrontmatter(frontmatter: Record<string, unknown>): {
         // Only add if it's a valid key in MDXLD
         if (unquotedKey && 
             ['type', 'context', 'id', 'language', 'base', 'vocab', 'list', 'set', 'reverse'].includes(unquotedKey)) {
-          (metadata as any)[unquotedKey] = value
+          (metadata as Record<string, unknown>)[unquotedKey] = value
         }
       } else {
         data[key] = value
@@ -108,7 +108,7 @@ export function stringify(mdxld: MDXLD, options: StringifyOptions = {}): string 
         key !== 'executableCode' &&
         key !== 'uiComponents') {
       const prefix = options.useAtPrefix ? '@' : '$'
-      yamlData[`${prefix}${key}`] = (metadata as any)[key]
+      yamlData[`${prefix}${key}`] = (metadata as Record<string, unknown>)[key]
     }
   }
   
