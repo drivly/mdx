@@ -1,6 +1,8 @@
 import { existsSync, statSync } from 'fs'
 import { join, resolve, dirname, basename, extname } from 'path'
 
+/* global process, require */
+
 /**
  * Check if a path is a directory
  * @param {string} path - Path to check

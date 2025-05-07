@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* global process */
+
 import { Command } from 'commander'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
@@ -34,6 +36,8 @@ const findConfigFile = (dir, filename) => {
   return existsSync(configPath) ? configPath : null
 }
 
+const createdConfigFiles = new Set()
+
 const ensureConfigFiles = async (targetDir) => {
   const configFiles = [
     { src: '../src/config/next.config.js', dest: 'next.config.js' },
@@ -49,31 +53,59 @@ const ensureConfigFiles = async (targetDir) => {
     
     if (!existsSync(destPath)) {
       await fs.copyFile(sourcePath, destPath)
+      createdConfigFiles.add(destPath)
     }
   }
 }
 
-const runNextCommand = (command, args = []) => {
-  const nextBin = resolve(process.cwd(), 'node_modules', '.bin', 'next')
-  const nextExists = existsSync(nextBin)
+const cleanupConfigFiles = async () => {
+  if (createdConfigFiles.size === 0) return
   
-  const binPath = nextExists ? nextBin : 'npx next'
-  const cmd = nextExists ? binPath : 'npx'
-  const cmdArgs = nextExists ? [command, ...args] : ['next', command, ...args]
+  const fs = await import('fs/promises')
   
-  const child = spawn(cmd, cmdArgs, { 
-    stdio: 'inherit',
-    shell: true
-  })
+  for (const filePath of createdConfigFiles) {
+    try {
+      if (existsSync(filePath)) {
+        await fs.unlink(filePath)
+      }
+    } catch (error) {
+      console.warn(`Warning: Could not remove temporary file ${filePath}: ${error.message}`)
+    }
+  }
   
-  child.on('error', (error) => {
-    console.error(`Error executing command: ${error.message}`)
-    process.exit(1)
-  })
+  createdConfigFiles.clear()
+}
+
+const runNextCommand = async (command, args = []) => {
+  const userCwd = process.cwd()
   
-  child.on('close', (code) => {
-    process.exit(code)
-  })
+  try {
+    await ensureConfigFiles(userCwd)
+    
+    const nextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
+    const nextExists = existsSync(nextBin)
+    
+    const binPath = nextExists ? nextBin : 'npx next'
+    const cmd = nextExists ? binPath : 'npx'
+    const cmdArgs = nextExists ? [command, ...args] : ['next', command, ...args]
+    
+    const child = spawn(cmd, cmdArgs, { 
+      stdio: 'inherit',
+      shell: true
+    })
+    
+    child.on('error', (error) => {
+      console.error(`Error executing command: ${error.message}`)
+      cleanupConfigFiles().finally(() => process.exit(1))
+    })
+    
+    child.on('close', (code) => {
+      cleanupConfigFiles().finally(() => process.exit(code))
+    })
+  } catch (error) {
+    console.error(`Error: ${error.message}`)
+    cleanupConfigFiles().finally(() => process.exit(1))
+  }
 }
 
 program
@@ -82,16 +114,14 @@ program
   .option('-p, --port <port>', 'Port to run the server on', '3000')
   .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
   .action(async (options) => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('dev', [`--port=${options.port}`, `--hostname=${options.hostname}`])
+    await runNextCommand('dev', [`--port=${options.port}`, `--hostname=${options.hostname}`])
   })
 
 program
   .command('build')
   .description('Build the application for production')
   .action(async () => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('build')
+    await runNextCommand('build')
   })
 
 program
@@ -100,16 +130,14 @@ program
   .option('-p, --port <port>', 'Port to run the server on', '3000')
   .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
   .action(async (options) => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('start', [`--port=${options.port}`, `--hostname=${options.hostname}`])
+    await runNextCommand('start', [`--port=${options.port}`, `--hostname=${options.hostname}`])
   })
 
 program
   .command('lint')
   .description('Run linting on the application')
   .action(async () => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('lint')
+    await runNextCommand('lint')
   })
 
 program
@@ -127,9 +155,7 @@ program
     
     console.log(`Serving markdown file: ${resolvedPath}`)
     
-    await ensureConfigFiles(process.cwd())
-    
-    runNextCommand('dev')
+    await runNextCommand('dev')
   })
 
 program.parse(process.argv)

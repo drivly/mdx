@@ -1,3 +1,7 @@
+import { join } from 'path'
+
+/* global process, require */
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
