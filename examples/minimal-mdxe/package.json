@@ -1,0 +1,17 @@
+{
+  "name": "minimal-mdxe-example",
+  "private": true,
+  "scripts": {
+    "dev": "mdxe dev",
+    "build": "mdxe build",
+    "start": "mdxe start",
+    "lint": "mdxe lint",
+    "format": "prettier --write \"**/*.{md,mdx}\""
+  },
+  "dependencies": {
+    "mdxe": "workspace:*"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  }
+}
