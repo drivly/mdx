@@ -1,0 +1,61 @@
+{
+  "name": "mdxe",
+  "version": "0.1.0",
+  "description": "Zero-config CLI for serving Markdown and MDX files",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "mdxe": "./bin/mdxe.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src/config"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x bin/mdxe.js",
+    "dev": "tsc --watch",
+    "lint": "eslint src bin --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.10",
+    "commander": "^12.0.0",
+    "mdxui": "workspace:*",
+    "next": "^15.3.0",
+    "nextra": "^4.2.17",
+    "nextra-theme-docs": "^4.2.17",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^3.4.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.1",
+    "eslint": "^9.26.0",
+    "typescript": "5.8.2"
+  },
+  "keywords": [
+    "mdx",
+    "markdown",
+    "cli",
+    "next.js",
+    "tailwind",
+    "typography"
+  ],
+  "author": "Drivly",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drivly/mdx"
+  },
+  "bugs": {
+    "url": "https://github.com/drivly/mdx/issues"
+  },
+  "homepage": "https://mdxe.org"
+}
