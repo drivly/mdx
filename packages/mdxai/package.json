@@ -1,0 +1,53 @@
+{
+  "name": "mdxai",
+  "version": "0.1.0",
+  "description": "CLI to recursively generate and edit MDX files using AI",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "mdxai": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "glob": "^10.3.10",
+    "mdxld": "workspace:*",
+    "mdxui": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.26.0",
+    "tsup": "^8.0.2",
+    "typescript": "5.8.2"
+  },
+  "keywords": [
+    "mdx",
+    "markdown",
+    "cli",
+    "ai",
+    "content-generation"
+  ],
+  "author": "Drivly",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drivly/mdx"
+  },
+  "bugs": {
+    "url": "https://github.com/drivly/mdx/issues"
+  },
+  "homepage": "https://github.com/drivly/mdx"
+}
