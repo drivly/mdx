@@ -36,34 +36,54 @@ const findConfigFile = (dir, filename) => {
   return existsSync(configPath) ? configPath : null
 }
 
+const createdConfigFiles = new Set()
+
+const ensureConfigFiles = async (targetDir) => {
+  const configFiles = [
+    { src: '../src/config/next.config.js', dest: 'next.config.js' },
+    { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
+    { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' }
+  ]
+
+  const fs = await import('fs/promises')
+  
+  for (const { src, dest } of configFiles) {
+    const sourcePath = join(__dirname, src)
+    const destPath = join(targetDir, dest)
+    
+    if (!existsSync(destPath)) {
+      await fs.copyFile(sourcePath, destPath)
+      createdConfigFiles.add(destPath)
+    }
+  }
+}
+
+const cleanupConfigFiles = async () => {
+  if (createdConfigFiles.size === 0) return
+  
+  const fs = await import('fs/promises')
+  
+  for (const filePath of createdConfigFiles) {
+    try {
+      if (existsSync(filePath)) {
+        await fs.unlink(filePath)
+      }
+    } catch (error) {
+      console.warn(`Warning: Could not remove temporary file ${filePath}: ${error.message}`)
+    }
+  }
+  
+  createdConfigFiles.clear()
+}
+
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
-  const mdxeDir = join(__dirname, '..')
   
   try {
+    await ensureConfigFiles(userCwd)
+    
     const nextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const nextExists = existsSync(nextBin)
-
-    const configFiles = [
-      { src: '../src/config/next.config.js', dest: 'next.config.js' },
-      { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
-      { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' }
-    ]
-    
-    const fs = await import('fs/promises')
-    
-    for (const { src, dest } of configFiles) {
-      const sourcePath = join(__dirname, src)
-      const destPath = join(mdxeDir, dest)
-      
-      if (!existsSync(destPath)) {
-        await fs.copyFile(sourcePath, destPath)
-      }
-    }
-    
-    process.env.USER_PROJECT_DIR = userCwd
-    
-    process.chdir(mdxeDir)
     
     const binPath = nextExists ? nextBin : 'npx next'
     const cmd = nextExists ? binPath : 'npx'
@@ -71,24 +91,20 @@ const runNextCommand = async (command, args = []) => {
     
     const child = spawn(cmd, cmdArgs, { 
       stdio: 'inherit',
-      shell: true,
-      env: { ...process.env }
+      shell: true
     })
     
     child.on('error', (error) => {
-      process.chdir(userCwd)
       console.error(`Error executing command: ${error.message}`)
-      process.exit(1)
+      cleanupConfigFiles().finally(() => process.exit(1))
     })
     
     child.on('close', (code) => {
-      process.chdir(userCwd)
-      process.exit(code)
+      cleanupConfigFiles().finally(() => process.exit(code))
     })
   } catch (error) {
-    process.chdir(userCwd)
     console.error(`Error: ${error.message}`)
-    process.exit(1)
+    cleanupConfigFiles().finally(() => process.exit(1))
   }
 }
 
