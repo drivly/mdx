@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
-    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "postbuild": "[ -d \".next/server/app\" ] && [ -n \"$(find .next/server/app -name '*.html' 2>/dev/null)\" ] && pagefind --site .next/server/app --output-path public/_pagefind || echo \"Skipping pagefind: .next/server/app directory doesn't exist or contains no HTML files\"",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
