@@ -1,7 +1,6 @@
 {
-  "name": "@repo/ui",
-  "version": "0.0.0",
-  "private": true,
+  "name": "mdxui",
+  "version": "0.0.1",
   "exports": {
     "./*": "./src/*.tsx"
   },
