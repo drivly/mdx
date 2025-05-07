@@ -228,6 +228,21 @@ importers:
 
   apps/mdx.org.ai:
     dependencies:
+      ai-functions:
+        specifier: ^0.3.0
+        version: 0.3.0(react@19.1.0)
+      ai-workflows:
+        specifier: ^1.1.0
+        version: 1.1.0(@mdx-js/mdx@3.1.0(acorn@8.14.1))(socks@2.8.4)(web-streams-polyfill@4.0.0-beta.3)(ws@8.18.0)
+      apis.do:
+        specifier: ^0.0.1
+        version: 0.0.1
+      business-as-code:
+        specifier: ^0.1.0
+        version: 0.1.0
+      functions.do:
+        specifier: ^0.0.5
+        version: 0.0.5
       mdxui:
         specifier: workspace:*
         version: link:../../packages/mdxui
@@ -246,6 +261,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
+      workflows.do:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
