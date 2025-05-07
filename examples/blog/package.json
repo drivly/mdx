@@ -1,6 +1,7 @@
 {
   "name": "blog-example",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "mdxe dev",
     "build": "mdxe build",
