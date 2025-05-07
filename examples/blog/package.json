@@ -1,0 +1,13 @@
+{
+  "name": "blog-example",
+  "private": true,
+  "scripts": {
+    "dev": "mdxe dev",
+    "build": "mdxe build",
+    "start": "mdxe start",
+    "lint": "mdxe lint"
+  },
+  "dependencies": {
+    "mdxe": "workspace:*"
+  }
+}
