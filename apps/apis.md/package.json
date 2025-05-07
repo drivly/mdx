@@ -9,9 +9,14 @@
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.0.0",
     "ai-functions": "^0.3.0",
     "ai-workflows": "^1.1.0",
     "apis.do": "^0.0.1",
@@ -33,6 +38,7 @@
     "@types/react-dom": "19.1.1",
     "eslint": "^9.26.0",
     "pagefind": "^1.3.0",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "wrangler": "^4.14.1"
   }
 }
