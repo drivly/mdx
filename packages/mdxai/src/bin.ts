@@ -16,12 +16,27 @@ async function run() {
         await cli.init();
         break;
       case 'generate':
+        if (!args[0]) {
+          console.error('Error: Path is required for generate command');
+          showHelp();
+          process.exit(1);
+        }
         await cli.generate(args[0], JSON.parse(args[1] || '{}'));
         break;
       case 'edit':
+        if (!args[0]) {
+          console.error('Error: Path is required for edit command');
+          showHelp();
+          process.exit(1);
+        }
         await cli.edit(args[0], JSON.parse(args[1] || '{}'));
         break;
       case 'batch':
+        if (!args[0]) {
+          console.error('Error: Pattern is required for batch command');
+          showHelp();
+          process.exit(1);
+        }
         await cli.batch(args[0], JSON.parse(args[1] || '{}'));
         break;
       default:

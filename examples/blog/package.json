@@ -9,6 +9,7 @@
     "lint": "mdxe lint"
   },
   "dependencies": {
-    "mdxe": "workspace:*"
+    "mdxe": "workspace:*",
+    "nextra": "^4.2.17"
   }
 }

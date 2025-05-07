@@ -1,5 +1,5 @@
 import { visit } from 'unist-util-visit'
-import type { Root } from 'mdast'
+import type { Root, Code } from 'mdast'
 
 /**
  * Extracts executable code (JavaScript/TypeScript) from MDX content
@@ -9,15 +9,16 @@ import type { Root } from 'mdast'
 export function extractExecutableCode(ast: Root): string[] {
   const executableCode: string[] = []
 
-  visit(ast, 'mdxjsEsm', (node: any) => {
-    if (node.value && node.value.trim()) {
+  visit(ast, 'mdxjsEsm', (node) => {
+    if (node && typeof node === 'object' && 'value' in node && typeof node.value === 'string' && node.value.trim()) {
       executableCode.push(node.value)
     }
   })
 
-  visit(ast, 'code', (node: any) => {
-    if (['js', 'javascript', 'jsx', 'ts', 'typescript', 'tsx'].includes(node.lang || '')) {
-      executableCode.push(node.value)
+  visit(ast, 'code', (node) => {
+    const codeNode = node as Code;
+    if (['js', 'javascript', 'jsx', 'ts', 'typescript', 'tsx'].includes(codeNode.lang || '')) {
+      executableCode.push(codeNode.value)
     }
   })
 
@@ -32,12 +33,16 @@ export function extractExecutableCode(ast: Root): string[] {
 export function extractUIComponents(ast: Root): string[] {
   const uiComponents: string[] = []
 
-  visit(ast, 'mdxJsxFlowElement', (node: any) => {
-    uiComponents.push(`<${node.name}${serializeAttributes(node.attributes)}>`)
+  visit(ast, 'mdxJsxFlowElement', (node) => {
+    if (node && typeof node === 'object' && 'name' in node && 'attributes' in node) {
+      uiComponents.push(`<${node.name}${serializeAttributes(node.attributes)}>`)
+    }
   })
 
-  visit(ast, 'mdxJsxTextElement', (node: any) => {
-    uiComponents.push(`<${node.name}${serializeAttributes(node.attributes)}>`)
+  visit(ast, 'mdxJsxTextElement', (node) => {
+    if (node && typeof node === 'object' && 'name' in node && 'attributes' in node) {
+      uiComponents.push(`<${node.name}${serializeAttributes(node.attributes)}>`)
+    }
   })
 
   return uiComponents
@@ -48,14 +53,14 @@ export function extractUIComponents(ast: Root): string[] {
  * @param attributes - The JSX element attributes
  * @returns A string representation of the attributes
  */
-function serializeAttributes(attributes: any[]): string {
+function serializeAttributes(attributes: Record<string, any>[]): string {
   if (!attributes || attributes.length === 0) {
     return ''
   }
 
   return attributes
     .map((attr) => {
-      if (attr.type === 'mdxJsxAttribute') {
+      if (attr && typeof attr === 'object' && 'type' in attr && attr.type === 'mdxJsxAttribute' && 'name' in attr) {
         const value = typeof attr.value === 'string' 
           ? `"${attr.value}"` 
           : '{...}' // Placeholder for complex values
