@@ -17,7 +17,7 @@
     "next-env.d.ts",
     "next.config.js",
     ".next/types/**/*.ts"
-  ],
+, "content/_meta.js", "mdx-components.js"  ],
   "exclude": [
     "node_modules"
   ]
