@@ -7,13 +7,10 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # Run once a week on Sunday at midnight
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -35,11 +32,12 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
-
       - name: Type Check
         run: pnpm check-types
 
       - name: Lint
         run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+        
