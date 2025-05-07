@@ -1,6 +1,6 @@
 import { visit } from 'unist-util-visit'
 import { toString } from 'mdast-util-to-string'
-import type { Root, Heading, List, Link, Content, Parent } from 'mdast'
+import type { Root, Heading, List, Link } from 'mdast'
 import type { MarkdownJSONOptions, MarkdownJSON } from './types.js'
 
 /**
@@ -23,8 +23,8 @@ export function transformMarkdownToJson(ast: Root, options: MarkdownJSONOptions 
       const headerText = toString(headingNode).trim()
       let headerKey = headerText
 
-      if (headerCounts[headerKey]) {
-        headerCounts[headerKey]++
+      if (headerCounts[headerKey] !== undefined) {
+        headerCounts[headerKey] = (headerCounts[headerKey] || 0) + 1
         headerKey = `${headerKey} (${headerCounts[headerKey]})`
       } else {
         headerCounts[headerKey] = 1
@@ -36,8 +36,12 @@ export function transformMarkdownToJson(ast: Root, options: MarkdownJSONOptions 
 
           if (h1Headers.length > 0) {
             const parentHeader = h1Headers[h1Headers.length - 1]
-            result[parentHeader] = result[parentHeader] || {}
-            currentSection = result[parentHeader] as Record<string, unknown>
+            if (parentHeader) {
+              result[parentHeader] = result[parentHeader] || {}
+              currentSection = result[parentHeader] as Record<string, unknown>
+            } else {
+              currentSection = result
+            }
           } else {
             currentSection = result
           }

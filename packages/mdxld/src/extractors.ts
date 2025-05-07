@@ -1,5 +1,5 @@
 import { visit } from 'unist-util-visit'
-import type { Root, MdxJsxFlowElement, MdxJsxTextElement, MdxjsEsm } from 'mdast'
+import type { Root } from 'mdast'
 
 /**
  * Extracts executable code (JavaScript/TypeScript) from MDX content
@@ -9,13 +9,13 @@ import type { Root, MdxJsxFlowElement, MdxJsxTextElement, MdxjsEsm } from 'mdast
 export function extractExecutableCode(ast: Root): string[] {
   const executableCode: string[] = []
 
-  visit(ast, 'mdxjsEsm', (node: MdxjsEsm) => {
+  visit(ast, 'mdxjsEsm', (node: any) => {
     if (node.value && node.value.trim()) {
       executableCode.push(node.value)
     }
   })
 
-  visit(ast, 'code', (node) => {
+  visit(ast, 'code', (node: any) => {
     if (['js', 'javascript', 'jsx', 'ts', 'typescript', 'tsx'].includes(node.lang || '')) {
       executableCode.push(node.value)
     }
@@ -32,11 +32,11 @@ export function extractExecutableCode(ast: Root): string[] {
 export function extractUIComponents(ast: Root): string[] {
   const uiComponents: string[] = []
 
-  visit(ast, 'mdxJsxFlowElement', (node: MdxJsxFlowElement) => {
+  visit(ast, 'mdxJsxFlowElement', (node: any) => {
     uiComponents.push(`<${node.name}${serializeAttributes(node.attributes)}>`)
   })
 
-  visit(ast, 'mdxJsxTextElement', (node: MdxJsxTextElement) => {
+  visit(ast, 'mdxJsxTextElement', (node: any) => {
     uiComponents.push(`<${node.name}${serializeAttributes(node.attributes)}>`)
   })
 

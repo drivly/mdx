@@ -1,132 +1,120 @@
-import { parse as parseYAML, stringify as stringifyYAML } from 'yaml'
-import type { MDXLD, ParseOptions, SpecialProperty } from './types.js'
+import yaml from 'yaml'
+import type { MDXLD, ParseOptions, StringifyOptions } from './types.js'
 
-const SPECIAL_PROPERTIES: SpecialProperty[] = ['type', 'context', 'id', 'language', 'base', 'vocab', 'list', 'set', 'reverse']
-
-function extractFrontmatter(mdx: string): { frontmatter: string; content: string } {
-  if (!mdx.startsWith('---\n')) {
-    return { frontmatter: '', content: mdx }
+/**
+ * Extracts YAML frontmatter from MDX content
+ * @param mdx - The MDX content
+ * @returns The frontmatter and content
+ */
+function extractFrontmatter(mdx: string): { frontmatter: string | null; content: string } {
+  const frontmatterMatch = mdx.match(/^---\n([\s\S]*?)\n---\n/)
+  
+  if (!frontmatterMatch) {
+    return { frontmatter: null, content: mdx }
   }
-
-  const endMatch = mdx.slice(4).match(/\n---\n/)
-  if (!endMatch || typeof endMatch.index !== 'number') {
-    throw new Error('Failed to parse YAML frontmatter')
-  }
-
-  const endIndex = endMatch.index
-  const frontmatter = mdx.slice(4, 4 + endIndex).trim()
-  const content = mdx.slice(4 + endIndex + 5)
-
-  if (!frontmatter) {
-    return { frontmatter: '', content: mdx }
-  }
-
+  
+  const frontmatter = frontmatterMatch[1] || null
+  const content = mdx.slice(frontmatterMatch[0].length)
+  
   return { frontmatter, content }
 }
 
-function escapeAtPrefix(yaml: string): string {
-  return yaml.replace(/^@/gm, '__AT__')
-}
-
-function unescapeAtPrefix(yaml: string): string {
-  return yaml.replace(/__AT__/g, '@')
-}
-
-function processFrontmatter(yaml: Record<string, unknown>, options: ParseOptions = {}): { data: Record<string, unknown> } & Record<string, unknown> {
+/**
+ * Processes frontmatter to handle special properties and escape prefixes
+ * @param frontmatter - The parsed frontmatter object
+ * @returns The processed data and metadata
+ */
+function processFrontmatter(frontmatter: Record<string, unknown>): { 
+  data: Record<string, unknown>; 
+  metadata: Partial<MDXLD>;
+} {
   const data: Record<string, unknown> = {}
-  const metadata: Record<string, unknown> = {}
-
-  for (const [key, value] of Object.entries(yaml)) {
-    const quotedMatch = key.match(/^(['"])@(.+)\1$/)
-    if (quotedMatch) {
-      const unquotedKey = quotedMatch[2]
-      if (SPECIAL_PROPERTIES.includes(unquotedKey as SpecialProperty)) {
-        metadata[unquotedKey] = value
-        if (unquotedKey === 'set' && Array.isArray(value)) {
-          metadata[unquotedKey] = new Set(value)
-        } else if (unquotedKey === 'list' && !Array.isArray(value)) {
-          metadata[unquotedKey] = [value]
+  const metadata: Partial<MDXLD> = {}
+  
+  for (const key in frontmatter) {
+    if (Object.prototype.hasOwnProperty.call(frontmatter, key)) {
+      const value = frontmatter[key]
+      
+      // Handle @ and $ prefixed properties
+      if (key.startsWith('@') || key.startsWith('$')) {
+        const unquotedKey = key.startsWith('@') 
+          ? key.substring(1) 
+          : key.substring(1)
+        
+        // Only add if it's a valid key in MDXLD
+        if (unquotedKey && 
+            ['type', 'context', 'id', 'language', 'base', 'vocab', 'list', 'set', 'reverse'].includes(unquotedKey)) {
+          (metadata as any)[unquotedKey] = value
         }
       } else {
-        data[options.allowAtPrefix ? `@${unquotedKey}` : `$${unquotedKey}`] = value
+        data[key] = value
       }
-      continue
-    }
-
-    if (key.startsWith('@') || key.startsWith('$')) {
-      const cleanKey = key.slice(1)
-      if (SPECIAL_PROPERTIES.includes(cleanKey as SpecialProperty)) {
-        if (cleanKey === 'set' && Array.isArray(value)) {
-          metadata[cleanKey] = new Set(value)
-        } else if (cleanKey === 'list' && !Array.isArray(value)) {
-          metadata[cleanKey] = [value]
-        } else {
-          metadata[cleanKey] = value
-        }
-      } else {
-        const prefix = options.allowAtPrefix ? '@' : '$'
-        data[`${prefix}${cleanKey}`] = value
-      }
-    } else {
-      data[key] = value
     }
   }
-
-  return { ...metadata, data }
+  
+  return { data, metadata }
 }
 
+/**
+ * Parses MDX content with YAML-LD frontmatter
+ * @param mdx - The MDX content
+ * @param options - Parse options
+ * @returns The parsed MDXLD object
+ */
 export function parse(mdx: string, options: ParseOptions = {}): MDXLD {
   const { frontmatter, content } = extractFrontmatter(mdx)
-
-  if (!frontmatter) {
-    return {
-      data: {},
-      content,
-      executableCode: [],
-      uiComponents: [],
+  
+  const result: MDXLD = {
+    data: {},
+    content,
+  }
+  
+  if (frontmatter) {
+    try {
+      const parsedYaml = yaml.parse(frontmatter)
+      
+      if (typeof parsedYaml === 'object' && parsedYaml !== null) {
+        const { data, metadata } = processFrontmatter(parsedYaml)
+        result.data = data
+        
+        // Copy metadata properties to result
+        Object.assign(result, metadata)
+      }
+    } catch (error) {
+      // Just continue with empty data if parsing fails
+      console.error('Failed to parse frontmatter:', error)
     }
   }
-
-  try {
-    const yaml = parseYAML(frontmatter, {
-      strict: true,
-      schema: 'core',
-      logLevel: 'error',
-    })
-
-    if (typeof yaml !== 'object' || yaml === null || Array.isArray(yaml) || Object.keys(yaml).length === 0) {
-      throw new Error('Failed to parse YAML frontmatter')
-    }
-
-    return {
-      ...processFrontmatter(yaml as Record<string, unknown>, options),
-      content,
-      executableCode: [],
-      uiComponents: [],
-    }
-  } catch (error) {
-    throw new Error(`Failed to parse YAML frontmatter: ${error instanceof Error ? error.message : String(error)}`)
-  }
+  
+  return result
 }
 
-export function stringify(mdxld: MDXLD, options?: { useAtPrefix?: boolean }): string {
-  const { data, content, executableCode, uiComponents, ...special } = mdxld
-  const prefix = options?.useAtPrefix ? '@' : '$'
-
-  const orderedFrontmatter: Record<string, unknown> = {}
-
-  for (const key of SPECIAL_PROPERTIES) {
-    const specialKey = key as keyof Omit<MDXLD, 'data' | 'content' | 'executableCode' | 'uiComponents'>
-    const value = special[specialKey]
-    if (value !== undefined) {
-      orderedFrontmatter[`${prefix}${key}`] = value instanceof Set ? Array.from(value) : value
+/**
+ * Stringifies an MDXLD object back to MDX content
+ * @param mdxld - The MDXLD object
+ * @param options - Stringify options
+ * @returns The stringified MDX content
+ */
+export function stringify(mdxld: MDXLD, options: StringifyOptions = {}): string {
+  const { data = {}, content = '', ...metadata } = mdxld
+  const yamlData: Record<string, unknown> = { ...data }
+  
+  // Add metadata with @ or $ prefix
+  for (const key in metadata) {
+    if (Object.prototype.hasOwnProperty.call(metadata, key) && 
+        key !== 'data' && 
+        key !== 'content' &&
+        key !== 'ast' &&
+        key !== 'executableCode' &&
+        key !== 'uiComponents') {
+      const prefix = options.useAtPrefix ? '@' : '$'
+      yamlData[`${prefix}${key}`] = (metadata as any)[key]
     }
   }
-
-  Object.assign(orderedFrontmatter, data)
-
-  const escapedFrontmatter = Object.fromEntries(Object.entries(orderedFrontmatter).map(([key, value]) => [escapeAtPrefix(key), value]))
-
-  const yamlString = unescapeAtPrefix(stringifyYAML(escapedFrontmatter))
-  return `---\n${yamlString}---\n${content}`
+  
+  const frontmatter = Object.keys(yamlData).length > 0 
+    ? `---\n${yaml.stringify(yamlData)}---\n\n` 
+    : ''
+  
+  return `${frontmatter}${content}`
 }
