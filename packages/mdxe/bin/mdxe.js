@@ -34,7 +34,7 @@ const findConfigFile = (dir, filename) => {
   return existsSync(configPath) ? configPath : null
 }
 
-const ensureConfigFiles = async (targetDir) => {
+const ensureConfigFiles = async () => {
   const configFiles = [
     { src: '../src/config/next.config.js', dest: 'next.config.js' },
     { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
@@ -43,27 +43,44 @@ const ensureConfigFiles = async (targetDir) => {
 
   const fs = await import('fs/promises')
   
+  const packageConfigDir = join(__dirname, '../.config')
+  
+  await fs.mkdir(packageConfigDir, { recursive: true })
+  
   for (const { src, dest } of configFiles) {
     const sourcePath = join(__dirname, src)
-    const destPath = join(targetDir, dest)
+    const destPath = join(packageConfigDir, dest)
     
     if (!existsSync(destPath)) {
       await fs.copyFile(sourcePath, destPath)
     }
   }
+  
+  return packageConfigDir
 }
 
-const runNextCommand = (command, args = []) => {
+const runNextCommand = async (command, args = []) => {
+  const configDir = await ensureConfigFiles()
   const nextBin = resolve(process.cwd(), 'node_modules', '.bin', 'next')
   const nextExists = existsSync(nextBin)
   
+  const configArgs = [
+    `--config=${join(configDir, 'next.config.js')}`,
+  ]
+  
   const binPath = nextExists ? nextBin : 'npx next'
   const cmd = nextExists ? binPath : 'npx'
-  const cmdArgs = nextExists ? [command, ...args] : ['next', command, ...args]
+  const cmdArgs = nextExists ? 
+    [command, ...configArgs, ...args] : 
+    ['next', command, ...configArgs, ...args]
+  
+  process.env.TAILWIND_CONFIG_PATH = join(configDir, 'tailwind.config.js')
+  process.env.MDX_COMPONENTS_PATH = join(configDir, 'mdx-components.js')
   
   const child = spawn(cmd, cmdArgs, { 
     stdio: 'inherit',
-    shell: true
+    shell: true,
+    env: { ...process.env }
   })
   
   child.on('error', (error) => {
@@ -82,16 +99,14 @@ program
   .option('-p, --port <port>', 'Port to run the server on', '3000')
   .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
   .action(async (options) => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('dev', [`--port=${options.port}`, `--hostname=${options.hostname}`])
+    await runNextCommand('dev', [`--port=${options.port}`, `--hostname=${options.hostname}`])
   })
 
 program
   .command('build')
   .description('Build the application for production')
   .action(async () => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('build')
+    await runNextCommand('build')
   })
 
 program
@@ -100,16 +115,14 @@ program
   .option('-p, --port <port>', 'Port to run the server on', '3000')
   .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
   .action(async (options) => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('start', [`--port=${options.port}`, `--hostname=${options.hostname}`])
+    await runNextCommand('start', [`--port=${options.port}`, `--hostname=${options.hostname}`])
   })
 
 program
   .command('lint')
   .description('Run linting on the application')
   .action(async () => {
-    await ensureConfigFiles(process.cwd())
-    runNextCommand('lint')
+    await runNextCommand('lint')
   })
 
 program
@@ -127,9 +140,7 @@ program
     
     console.log(`Serving markdown file: ${resolvedPath}`)
     
-    await ensureConfigFiles(process.cwd())
-    
-    runNextCommand('dev')
+    await runNextCommand('dev')
   })
 
 program.parse(process.argv)

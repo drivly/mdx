@@ -1,12 +1,14 @@
+import { join } from 'path'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    './app/**/*.{js,ts,jsx,tsx,md,mdx}',
-    './pages/**/*.{js,ts,jsx,tsx,md,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,md,mdx}',
-    './content/**/*.{js,ts,jsx,tsx,md,mdx}',
-    './src/**/*.{js,ts,jsx,tsx,md,mdx}',
-    './mdx-components.js',
+    join(process.cwd(), 'app/**/*.{js,ts,jsx,tsx,md,mdx}'),
+    join(process.cwd(), 'pages/**/*.{js,ts,jsx,tsx,md,mdx}'),
+    join(process.cwd(), 'components/**/*.{js,ts,jsx,tsx,md,mdx}'),
+    join(process.cwd(), 'content/**/*.{js,ts,jsx,tsx,md,mdx}'),
+    join(process.cwd(), 'src/**/*.{js,ts,jsx,tsx,md,mdx}'),
+    process.env.MDX_COMPONENTS_PATH || join(process.cwd(), 'mdx-components.js'),
   ],
   theme: {
     extend: {},
