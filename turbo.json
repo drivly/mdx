@@ -14,7 +14,7 @@
         "public/_pagefind/**"
       ]
     },
-    "//#examples/minimal-mdxe-example#build": {
+    "//#examples/**#build": {
       "dependsOn": ["build"]
     },
     "lint": {
