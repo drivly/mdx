@@ -67,7 +67,7 @@
     "@types/jsonld": "^1.5.15",
     "@types/mdast": "^4.0.4",
     "esbuild": "^0.20.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.26.0",
     "typescript": "^5.3.3",
     "vitest": "^1.0.0"
   }
