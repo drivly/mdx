@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* global process */
+
 import { Command } from 'commander'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'

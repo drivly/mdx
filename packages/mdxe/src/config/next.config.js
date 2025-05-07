@@ -1,6 +1,8 @@
 import nextra from 'nextra'
 import { join } from 'path'
 
+/* global process */
+
 const withNextra = nextra({
   mdxOptions: {
     remarkPlugins: [],
