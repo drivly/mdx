@@ -11,6 +11,11 @@
     // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public
     "global_fetch_strictly_public",
   ],
+  "observability": {
+    "logs": {
+      "enabled": true
+    }
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
