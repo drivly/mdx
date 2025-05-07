@@ -20,5 +20,6 @@ export default withNextra({
     resolveAlias: {
       'next-mdx-import-source-file': './mdx-components.js'
     }
-  }
+  },
+  distDir: '.next'
 })

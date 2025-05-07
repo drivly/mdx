@@ -56,6 +56,26 @@ const ensureConfigFiles = async (targetDir) => {
       createdConfigFiles.add(destPath)
     }
   }
+  
+  const appDir = join(targetDir, 'app')
+  if (!existsSync(appDir)) {
+    await fs.mkdir(appDir, { recursive: true })
+    createdConfigFiles.add(appDir)
+    
+    const layoutPath = join(appDir, 'layout.tsx')
+    if (!existsSync(layoutPath)) {
+      await fs.writeFile(layoutPath, `
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}
+`)
+      createdConfigFiles.add(layoutPath)
+    }
+  }
 }
 
 const cleanupConfigFiles = async () => {
@@ -66,6 +86,10 @@ const cleanupConfigFiles = async () => {
   for (const filePath of createdConfigFiles) {
     try {
       if (existsSync(filePath)) {
+        const stat = await fs.stat(filePath)
+        if (stat.isDirectory()) {
+          continue
+        }
         await fs.unlink(filePath)
       }
     } catch (error) {
