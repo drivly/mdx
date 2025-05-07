@@ -1,5 +1,5 @@
 {
-  "name": "apis.md-site",
+  "name": "slide.md-site",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -12,17 +12,12 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "ai-functions": "^0.3.0",
-    "ai-workflows": "^1.1.0",
-    "business-as-code": "^0.1.0",
-    "functions.do": "^0.0.5",
     "mdxui": "workspace:*",
     "next": "^15.3.0",
     "nextra": "^4.2.17",
     "nextra-theme-docs": "^4.2.17",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "workflows.do": "^0.0.1"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
