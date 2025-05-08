@@ -29,113 +29,75 @@ const findConfigFile = (dir, filename) => {
 const createdConfigFiles = new Set()
 
 const ensureConfigFiles = async (targetDir) => {
-  const configFiles = [
-    { src: '../src/config/next.config.js', dest: 'next.config.js' },
-    { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
-    { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' },
-  ]
-
-  const fs = await import('fs/promises')
-
-  for (const { src, dest } of configFiles) {
-    const sourcePath = join(__dirname, src)
-    const destPath = join(targetDir, dest)
-
-    if (!existsSync(destPath)) {
-      await fs.copyFile(sourcePath, destPath)
-      createdConfigFiles.add(destPath)
-    }
-  }
-
-  const appDir = join(targetDir, 'app')
-  if (!existsSync(appDir)) {
-    await fs.mkdir(appDir, { recursive: true })
-    createdConfigFiles.add(appDir)
-
-    const layoutPath = join(appDir, 'layout.tsx')
-    if (!existsSync(layoutPath)) {
-      await fs.writeFile(
-        layoutPath,
-        `
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
-`,
-      )
-      createdConfigFiles.add(layoutPath)
-    }
-  }
+  return
 }
 
 const cleanupConfigFiles = async () => {
-  if (createdConfigFiles.size === 0) return
-
-  const fs = await import('fs/promises')
-
-  for (const filePath of createdConfigFiles) {
-    try {
-      if (existsSync(filePath)) {
-        const stat = await fs.stat(filePath)
-        if (stat.isDirectory()) {
-          continue
-        }
-        await fs.unlink(filePath)
-      }
-    } catch (error) {
-      console.warn(`Warning: Could not remove temporary file ${filePath}: ${error.message}`)
-    }
-  }
-
-  createdConfigFiles.clear()
+  return
 }
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
 
   try {
-    await ensureConfigFiles(userCwd)
-
+    const mdxeModulePath = resolve(__dirname, '..')
+    const mdxeNextDir = join(mdxeModulePath, '.next')
+    
+    if (!existsSync(mdxeNextDir)) {
+      console.error('Error: .next directory not found in mdxe package. Please reinstall mdxe.')
+      process.exit(1)
+    }
+    
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
-    const mdxeNextBin = resolve(__dirname, '..', 'node_modules', '.bin', 'next')
+    const mdxeNextBin = resolve(mdxeModulePath, 'node_modules', '.bin', 'next')
 
-    const localNextExists = existsSync(localNextBin)
-    const mdxeNextExists = existsSync(mdxeNextBin)
+    let cmd, cmdArgs
+    
+    const extraArgs = [
+      `--app-directory=${mdxeModulePath}`,
+      `--content-directory=${userCwd}`,
+      `--dist-directory=${mdxeNextDir}`
+    ]
 
-    let binPath, cmd, cmdArgs
-
-    if (localNextExists) {
-      binPath = localNextBin
-      cmd = binPath
-      cmdArgs = [command, ...args]
-    } else if (mdxeNextExists) {
-      binPath = mdxeNextBin
-      cmd = binPath
-      cmdArgs = [command, ...args]
+    if (existsSync(localNextBin)) {
+      cmd = localNextBin
+      cmdArgs = [command, ...extraArgs, ...args]
+    } else if (existsSync(mdxeNextBin)) {
+      cmd = mdxeNextBin
+      cmdArgs = [command, ...extraArgs, ...args]
     } else {
       cmd = 'npx'
-      cmdArgs = ['next', command, ...args]
+      cmdArgs = ['next', command, ...extraArgs, ...args]
     }
 
+    console.log(`Running Next.js from ${mdxeNextDir}`)
+    
     const child = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
+      cwd: userCwd,
+      env: {
+        ...process.env,
+        NEXT_DIST_DIR: mdxeNextDir,
+        MDXE_CONTENT_DIR: userCwd,
+        MDXE_MODULE_PATH: mdxeModulePath,
+        NODE_PATH: process.env.NODE_PATH ? 
+          `${process.env.NODE_PATH}:${join(mdxeModulePath, 'node_modules')}` : 
+          join(mdxeModulePath, 'node_modules')
+      }
     })
 
     child.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
-      cleanupConfigFiles().finally(() => process.exit(1))
+      process.exit(1)
     })
 
     child.on('close', (code) => {
-      cleanupConfigFiles().finally(() => process.exit(code))
+      process.exit(code)
     })
   } catch (error) {
     console.error(`Error: ${error.message}`)
-    cleanupConfigFiles().finally(() => process.exit(1))
+    process.exit(1)
   }
 }
 
