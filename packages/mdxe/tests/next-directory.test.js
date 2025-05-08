@@ -2,33 +2,27 @@ import { describe, test, expect } from 'vitest'
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
+import { tmpdir } from 'os'
+import fs from 'fs/promises'
 
-describe('mdxe package .next directory', () => {
-  test('mdxe package includes .next directory after build', () => {
-    console.log('Running simplified .next directory test')
-    
+describe('mdxe package Next.js configuration', () => {
+  test('mdxe package includes necessary Next.js configuration files', () => {
     const MDXE_DIR = resolve(__dirname, '..')
-    const packageNextDir = join(MDXE_DIR, '.next')
+    const configDir = join(MDXE_DIR, 'src', 'config')
     
-    console.log('Building mdxe package...')
-    try {
-      execSync('pnpm build', { cwd: MDXE_DIR, stdio: 'inherit' })
-      console.log('Build completed successfully')
-    } catch (error) {
-      console.error('Build failed:', error.message)
-      throw error
+    const requiredFiles = [
+      'next.config.js',
+      'tailwind.config.js',
+      'mdx-components.js'
+    ]
+    
+    for (const file of requiredFiles) {
+      const filePath = join(configDir, file)
+      console.log(`Checking if config file exists: ${filePath}`)
+      expect(existsSync(filePath)).toBe(true)
     }
     
-    console.log('Checking if .next directory exists in package root:', packageNextDir)
-    const packageNextDirExists = existsSync(packageNextDir)
-    
-    if (packageNextDirExists) {
-      console.log('.next directory exists in package root')
-      console.log('Contents:', execSync(`ls -la ${packageNextDir}`, { encoding: 'utf8' }))
-    } else {
-      console.error('.next directory does not exist in package root')
-    }
-    
-    expect(packageNextDirExists).toBe(true)
-  }, 120000) // Increase timeout to 120 seconds
+    const tempConfigPath = join(MDXE_DIR, 'src', 'utils', 'temp-config.js')
+    expect(existsSync(tempConfigPath)).toBe(true)
+  })
 })

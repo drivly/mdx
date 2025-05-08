@@ -12,19 +12,15 @@
   "files": [
     "bin",
     "dist",
-    "src/config",
-    ".next"
+    "src/config"
   ],
   "scripts": {
-    "prebuild": "node scripts/build-next.js",
     "build": "tsc && chmod +x bin/mdxe.js",
-    "postbuild": "node -e \"require('fs').existsSync('.next') || require('child_process').execSync('node scripts/build-next.js')\"",
     "dev": "tsc --watch",
     "lint": "eslint src bin",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check-types": "tsc --noEmit",
-    "prepare": "npm run build"
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.10",

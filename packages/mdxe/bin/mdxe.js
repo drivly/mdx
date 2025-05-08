@@ -9,6 +9,7 @@ import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
+import { createTempNextConfig } from '../src/utils/temp-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -26,27 +27,29 @@ const findConfigFile = (dir, filename) => {
   return existsSync(configPath) ? configPath : null
 }
 
-const createdConfigFiles = new Set()
+let activeProcess = null
+let tempConfigInfo = null
 
-const ensureConfigFiles = async (targetDir) => {
-  return
-}
-
-const cleanupConfigFiles = async () => {
-  return
-}
+process.on('SIGINT', async () => {
+  if (activeProcess) {
+    activeProcess.kill('SIGINT')
+  }
+  
+  if (tempConfigInfo) {
+    await tempConfigInfo.cleanup()
+  }
+  
+  process.exit(0)
+})
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
 
   try {
-    const mdxeModulePath = resolve(__dirname, '..')
-    const mdxeNextDir = join(mdxeModulePath, '.next')
+    tempConfigInfo = await createTempNextConfig(userCwd)
+    console.log(`Using temporary Next.js configuration in ${tempConfigInfo.tempDir}`)
     
-    if (!existsSync(mdxeNextDir)) {
-      console.error('Error: .next directory not found in mdxe package. Please reinstall mdxe.')
-      process.exit(1)
-    }
+    const mdxeModulePath = resolve(__dirname, '..')
     
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const mdxeNextBin = resolve(mdxeModulePath, 'node_modules', '.bin', 'next')
@@ -64,15 +67,14 @@ const runNextCommand = async (command, args = []) => {
       cmdArgs = ['next', command, ...args]
     }
 
-    console.log(`Running Next.js from ${mdxeNextDir}`)
+    console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
     
-    const child = spawn(cmd, cmdArgs, {
+    activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
-      cwd: userCwd,
+      cwd: tempConfigInfo.tempDir,
       env: {
         ...process.env,
-        NEXT_DIST_DIR: mdxeNextDir,
         MDXE_CONTENT_DIR: userCwd,
         MDXE_MODULE_PATH: mdxeModulePath,
         NODE_PATH: process.env.NODE_PATH ? 
@@ -81,16 +83,19 @@ const runNextCommand = async (command, args = []) => {
       }
     })
 
-    child.on('error', (error) => {
+    activeProcess.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
-      process.exit(1)
+      tempConfigInfo.cleanup().finally(() => process.exit(1))
     })
 
-    child.on('close', (code) => {
-      process.exit(code)
+    activeProcess.on('close', (code) => {
+      tempConfigInfo.cleanup().finally(() => process.exit(code))
     })
   } catch (error) {
     console.error(`Error: ${error.message}`)
+    if (tempConfigInfo) {
+      await tempConfigInfo.cleanup()
+    }
     process.exit(1)
   }
 }
