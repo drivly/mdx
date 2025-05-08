@@ -110,14 +110,14 @@ const runNextCommand = async (command, args = []) => {
     if (localNextExists) {
       binPath = localNextBin
       cmd = binPath
-      cmdArgs = [command, '--dir', embeddedAppPath, ...args]
+      cmdArgs = [command, ...args]
     } else if (mdxeNextExists) {
       binPath = mdxeNextBin
       cmd = binPath
-      cmdArgs = [command, '--dir', embeddedAppPath, ...args]
+      cmdArgs = [command, ...args]
     } else {
       cmd = 'npx'
-      cmdArgs = ['next', command, '--dir', embeddedAppPath, ...args]
+      cmdArgs = ['next', command, ...args]
     }
 
     const child = spawn(cmd, cmdArgs, {
