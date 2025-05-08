@@ -6,11 +6,11 @@ const nextConfig = {
   experimental: {
     turbo: {
       resolveAlias: {
-        'next-mdx-import-source-file': './mdx-components.js'
-      }
-    }
+        'next-mdx-import-source-file': './mdx-components.js',
+      },
+    },
   },
-  distDir: '.next'
+  distDir: '.next',
 }
 
 export default nextConfig

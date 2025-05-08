@@ -23,13 +23,13 @@ export function validateContent(content: string): boolean {
  */
 export function validateExecutableCode(code: string[] | Record<string, string>): boolean {
   if (Array.isArray(code)) {
-    return code.every(item => typeof item === 'string')
+    return code.every((item) => typeof item === 'string')
   }
-  
+
   if (typeof code === 'object' && code !== null) {
-    return Object.values(code).every(item => typeof item === 'string')
+    return Object.values(code).every((item) => typeof item === 'string')
   }
-  
+
   return false
 }
 
@@ -40,12 +40,12 @@ export function validateExecutableCode(code: string[] | Record<string, string>):
  */
 export function validateUIComponents(components: string[] | Record<string, string>): boolean {
   if (Array.isArray(components)) {
-    return components.every(item => typeof item === 'string')
+    return components.every((item) => typeof item === 'string')
   }
-  
+
   if (typeof components === 'object' && components !== null) {
-    return Object.values(components).every(item => typeof item === 'string')
+    return Object.values(components).every((item) => typeof item === 'string')
   }
-  
+
   return false
 }

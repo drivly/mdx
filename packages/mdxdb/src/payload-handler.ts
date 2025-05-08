@@ -5,7 +5,7 @@ import { MDXData, MDXListItem } from './types'
  */
 export class PayloadHandler {
   private payload: any
-  
+
   /**
    * Creates a new PayloadHandler
    * @param payloadInstance Payload CMS instance
@@ -13,7 +13,7 @@ export class PayloadHandler {
   constructor(payloadInstance: any) {
     this.payload = payloadInstance
   }
-  
+
   /**
    * Writes data to a Payload CMS collection
    * @param pathSegments Array of path segments that form the collection path
@@ -23,14 +23,14 @@ export class PayloadHandler {
   async writeMDX(pathSegments: string[], data: MDXData): Promise<MDXData> {
     const collection = pathSegments[0]
     const id = pathSegments[pathSegments.length - 1]
-    
+
     try {
       try {
         await this.payload.findByID({
           collection,
           id,
         })
-        
+
         await this.payload.update({
           collection,
           id,
@@ -42,14 +42,14 @@ export class PayloadHandler {
           data: { id, ...data },
         })
       }
-      
+
       return data
     } catch (error) {
       console.error('Error writing to Payload CMS:', error)
       throw error
     }
   }
-  
+
   /**
    * Reads data from a Payload CMS collection
    * @param pathSegments Array of path segments that form the collection path
@@ -58,17 +58,17 @@ export class PayloadHandler {
   async readMDX(pathSegments: string[]): Promise<MDXData | null> {
     const collection = pathSegments[0]
     const id = pathSegments[pathSegments.length - 1]
-    
+
     try {
       const doc = await this.payload.findByID({
         collection,
         id,
       })
-      
+
       if (!doc) {
         return null
       }
-      
+
       return doc
     } catch (error: any) {
       if (error.status === 404) {
@@ -78,7 +78,7 @@ export class PayloadHandler {
       throw error
     }
   }
-  
+
   /**
    * Lists all documents in a Payload CMS collection
    * @param pathSegments Array of path segments that form the collection path
@@ -86,13 +86,13 @@ export class PayloadHandler {
    */
   async listMDX(pathSegments: string[]): Promise<MDXListItem[]> {
     const collection = pathSegments[0]
-    
+
     try {
       const result = await this.payload.find({
         collection,
         limit: 1000,
       })
-      
+
       return result.docs.map((doc: any) => ({
         id: doc.id,
         ...doc,

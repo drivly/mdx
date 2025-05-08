@@ -9,23 +9,19 @@ export class MDXFileSystemHandler {
   private basePath: string
   private fileExtension: string
   private createDirectories: boolean
-  
+
   /**
    * Creates a new MDXFileSystemHandler
    * @param basePath Base path for MDX files
    * @param fileExtension File extension for MDX files
    * @param createDirectories Whether to create directories if they don't exist
    */
-  constructor(
-    basePath: string = '.db',
-    fileExtension: string = '.mdx',
-    createDirectories: boolean = true
-  ) {
+  constructor(basePath: string = '.db', fileExtension: string = '.mdx', createDirectories: boolean = true) {
     this.basePath = basePath
     this.fileExtension = fileExtension
     this.createDirectories = createDirectories
   }
-  
+
   /**
    * Writes data to an MDX file at the specified path
    * @param pathSegments Array of path segments that form the file path
@@ -34,16 +30,16 @@ export class MDXFileSystemHandler {
    */
   async writeMDX(pathSegments: string[], data: MDXData): Promise<MDXData> {
     const filePath = `${this.basePath}/${pathSegments.join('/')}${this.fileExtension}`
-    
+
     if (this.createDirectories) {
       await fs.mkdir(path.dirname(filePath), { recursive: true })
     }
-    
+
     const content = `---\n${JSON.stringify(data, null, 2)}\n---\n`
     await fs.writeFile(filePath, content)
     return data
   }
-  
+
   /**
    * Reads data from an MDX file at the specified path
    * @param pathSegments Array of path segments that form the file path
@@ -51,7 +47,7 @@ export class MDXFileSystemHandler {
    */
   async readMDX(pathSegments: string[]): Promise<MDXData | null> {
     const filePath = `${this.basePath}/${pathSegments.join('/')}${this.fileExtension}`
-    
+
     try {
       const content = await fs.readFile(filePath, 'utf-8')
       const match = content.match(/^---\n([\s\S]*?)\n---\n/)
@@ -66,7 +62,7 @@ export class MDXFileSystemHandler {
       throw error
     }
   }
-  
+
   /**
    * Lists all MDX files in a directory
    * @param pathSegments Array of path segments that form the directory path
@@ -74,14 +70,14 @@ export class MDXFileSystemHandler {
    */
   async listMDX(pathSegments: string[]): Promise<MDXListItem[]> {
     const dirPath = `${this.basePath}/${pathSegments.join('/')}`
-    
+
     try {
       if (this.createDirectories) {
         await fs.mkdir(dirPath, { recursive: true })
       }
-      
+
       const files = await fs.readdir(dirPath)
-      
+
       const results: MDXListItem[] = []
       for (const file of files) {
         if (file.endsWith(this.fileExtension)) {
@@ -92,7 +88,7 @@ export class MDXFileSystemHandler {
           }
         }
       }
-      
+
       return results
     } catch (error: any) {
       if (error.code === 'ENOENT') {

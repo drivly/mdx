@@ -15,17 +15,14 @@ export function generateId(): string {
  * @param options Query options
  * @returns Filtered documents
  */
-export function filterDocuments<T extends MDXData>(
-  documents: MDXListItem[],
-  options?: QueryOptions
-): MDXListItem[] {
+export function filterDocuments<T extends MDXData>(documents: MDXListItem[], options?: QueryOptions): MDXListItem[] {
   if (!options?.where) {
     return documents
   }
 
   const whereConditions = options.where || {}
-  
-  return documents.filter(doc => {
+
+  return documents.filter((doc) => {
     for (const [key, value] of Object.entries(whereConditions)) {
       if (doc[key] !== value) {
         return false
@@ -41,10 +38,7 @@ export function filterDocuments<T extends MDXData>(
  * @param options Query options
  * @returns Sorted documents
  */
-export function sortDocuments<T extends MDXData>(
-  documents: MDXListItem[],
-  options?: QueryOptions
-): MDXListItem[] {
+export function sortDocuments<T extends MDXData>(documents: MDXListItem[], options?: QueryOptions): MDXListItem[] {
   if (!options?.sort) {
     return documents
   }
@@ -55,7 +49,7 @@ export function sortDocuments<T extends MDXData>(
     for (const field of sortFields) {
       const isDesc = field.startsWith('-')
       const fieldName = isDesc ? field.substring(1) : field
-      
+
       if (a[fieldName] < b[fieldName]) {
         return isDesc ? 1 : -1
       }
@@ -73,10 +67,7 @@ export function sortDocuments<T extends MDXData>(
  * @param options Query options
  * @returns Paginated documents and metadata
  */
-export function paginateDocuments<T extends MDXData>(
-  documents: MDXListItem[],
-  options?: QueryOptions
-): ListResponse<T> {
+export function paginateDocuments<T extends MDXData>(documents: MDXListItem[], options?: QueryOptions): ListResponse<T> {
   const limit = options?.limit || 10
   const page = options?.page || 1
   const start = (page - 1) * limit
@@ -89,8 +80,8 @@ export function paginateDocuments<T extends MDXData>(
       total: documents.length,
       page,
       pageSize: limit,
-      hasNextPage: end < documents.length
-    }
+      hasNextPage: end < documents.length,
+    },
   }
 }
 
@@ -100,22 +91,16 @@ export function paginateDocuments<T extends MDXData>(
  * @param query Search query
  * @returns Filtered documents that match the query
  */
-export function searchDocuments<T extends MDXData>(
-  documents: MDXListItem[],
-  query: string
-): MDXListItem[] {
+export function searchDocuments<T extends MDXData>(documents: MDXListItem[], query: string): MDXListItem[] {
   if (!query) {
     return documents
   }
 
   const lowerQuery = query.toLowerCase()
-  
-  return documents.filter(doc => {
+
+  return documents.filter((doc) => {
     for (const value of Object.values(doc)) {
-      if (
-        typeof value === 'string' &&
-        value.toLowerCase().includes(lowerQuery)
-      ) {
+      if (typeof value === 'string' && value.toLowerCase().includes(lowerQuery)) {
         return true
       }
     }

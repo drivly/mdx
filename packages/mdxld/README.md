@@ -53,7 +53,8 @@ For AST parsing with remark plugins:
 ```typescript
 import { parse } from 'mdxld/ast'
 
-const mdx = parse(`---
+const mdx = parse(
+  `---
 $type: 'https://mdx.org.ai/Document'
 title: 'My Document'
 ---
@@ -63,7 +64,9 @@ title: 'My Document'
 import { Button } from 'ui'
 
 <Button>Click me</Button>
-`, { extractComponents: true })
+`,
+  { extractComponents: true },
+)
 
 // Includes AST from remark parsing
 console.log(mdx.ast)
@@ -84,7 +87,8 @@ To extract executable code and UI components:
 ```typescript
 import { parse } from 'mdxld/ast'
 
-const mdx = parse(`---
+const mdx = parse(
+  `---
 $type: 'https://mdx.org.ai/Document'
 title: 'My Document'
 ---
@@ -98,7 +102,9 @@ export function Example() {
 }
 
 <Button>Click me</Button>
-`, { extractComponents: true })
+`,
+  { extractComponents: true },
+)
 
 console.log(mdx.executableCode)
 // Output: ["import { Button } from 'ui'", "export function Example() {\n  return <div>Example</div>\n}"]

@@ -11,17 +11,9 @@ import { DatabaseClient } from './database-do-types'
  * @returns Database client
  */
 export const DB = (options: MDXDBOptions = {}): DatabaseClient => {
-  const {
-    backend = 'filesystem',
-    basePath = '.db',
-    fileExtension = '.mdx',
-    createDirectories = true,
-    payload
-  } = options
+  const { backend = 'filesystem', basePath = '.db', fileExtension = '.mdx', createDirectories = true, payload } = options
 
-  const handler = backend === 'filesystem'
-    ? new MDXFileSystemHandler(basePath, fileExtension, createDirectories)
-    : new PayloadHandler(payload)
+  const handler = backend === 'filesystem' ? new MDXFileSystemHandler(basePath, fileExtension, createDirectories) : new PayloadHandler(payload)
 
   return new Proxy({} as DatabaseClient, {
     get: (target, prop) => {

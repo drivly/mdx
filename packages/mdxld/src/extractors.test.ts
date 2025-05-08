@@ -37,7 +37,7 @@ function example() {
       const result = extractExecutableCode(ast)
 
       expect(result).toHaveLength(1)
-      expect(result[0]).toContain("function example()")
+      expect(result[0]).toContain('function example()')
     })
   })
 
@@ -51,7 +51,7 @@ function example() {
       const result = extractUIComponents(ast)
 
       expect(result).toHaveLength(1)
-      expect(result[0]).toContain("<Button")
+      expect(result[0]).toContain('<Button')
     })
 
     it('should extract JSX elements with attributes', () => {
@@ -63,7 +63,7 @@ function example() {
       const result = extractUIComponents(ast)
 
       expect(result).toHaveLength(1)
-      expect(result[0]).toContain("<Button")
+      expect(result[0]).toContain('<Button')
       expect(result[0]).toContain('variant="primary"')
     })
   })

@@ -131,12 +131,12 @@ import { DB } from 'mdxdb'
 
 const db = DB({
   backend?: 'filesystem' | 'payload', // Optional, defaults to 'filesystem'
-  
+
   // Filesystem backend options (only used when backend is 'filesystem')
   basePath?: string, // Optional, defaults to '.db'
   fileExtension?: string, // Optional, defaults to '.mdx'
   createDirectories?: boolean, // Optional, defaults to true
-  
+
   // Payload backend options (only used when backend is 'payload')
   payload?: PayloadCMS, // Required for payload backend
 })
@@ -220,8 +220,12 @@ const type = await db.types.create({
   name: 'Article',
   hash: 'article-hash',
   type: 'code',
-  json: { /* schema definition */ },
-  schema: { /* JSON schema */ },
+  json: {
+    /* schema definition */
+  },
+  schema: {
+    /* JSON schema */
+  },
 })
 ```
 
@@ -234,8 +238,12 @@ const resource = await db.resources.create({
   sqid: 'resource-sqid',
   hash: 'resource-hash',
   type: 'article-id', // ID of a type
-  data: { /* resource data */ },
-  embedding: { /* vector embedding */ },
+  data: {
+    /* resource data */
+  },
+  embedding: {
+    /* vector embedding */
+  },
   content: 'Rich text content',
 })
 ```

@@ -1,11 +1,11 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { AIContentOptions, MDXSchema, ProcessFileOptions } from './types.js';
+import fs from 'fs/promises'
+import path from 'path'
+import { AIContentOptions, MDXSchema, ProcessFileOptions } from './types.js'
 
 async function generateAIContent(prompt: string, options: AIContentOptions): Promise<string> {
-  console.log(`Generating content with prompt: ${prompt}`);
-  console.log(`Using model: ${options.model || 'default'}`);
-  
+  console.log(`Generating content with prompt: ${prompt}`)
+  console.log(`Using model: ${options.model || 'default'}`)
+
   return `
 # AI Generated Content
 
@@ -24,102 +24,102 @@ This content was generated based on the prompt: "${prompt}"
 ## Conclusion
 
 This is just a placeholder. In the actual implementation, this would be replaced with content from an AI model.
-`;
+`
 }
 
 export async function processFile(filePath: string, options: ProcessFileOptions) {
-  console.log(`Processing file: ${filePath} with mode: ${options.mode}`);
-  
+  console.log(`Processing file: ${filePath} with mode: ${options.mode}`)
+
   try {
     if (options.mode === 'edit') {
       try {
-        await fs.access(filePath);
+        await fs.access(filePath)
       } catch (err) {
-        throw new Error(`File not found: ${filePath}`);
+        throw new Error(`File not found: ${filePath}`)
       }
     }
-    
-    let existingContent = '';
-    let frontmatter: MDXSchema = {};
-    
-    if (options.mode === 'edit' && await fileExists(filePath)) {
-      existingContent = await fs.readFile(filePath, 'utf-8');
-      
-      const frontmatterMatch = existingContent.match(/^---\n([\s\S]*?)\n---\n/);
+
+    let existingContent = ''
+    let frontmatter: MDXSchema = {}
+
+    if (options.mode === 'edit' && (await fileExists(filePath))) {
+      existingContent = await fs.readFile(filePath, 'utf-8')
+
+      const frontmatterMatch = existingContent.match(/^---\n([\s\S]*?)\n---\n/)
       if (frontmatterMatch && frontmatterMatch[1]) {
         try {
-          const frontmatterStr = frontmatterMatch[1];
-          frontmatter = parseFrontmatter(frontmatterStr);
-          console.log('Preserved frontmatter:', frontmatter);
+          const frontmatterStr = frontmatterMatch[1]
+          frontmatter = parseFrontmatter(frontmatterStr)
+          console.log('Preserved frontmatter:', frontmatter)
         } catch (err) {
-          console.warn('Failed to parse frontmatter:', err);
+          console.warn('Failed to parse frontmatter:', err)
         }
       }
     }
-    
-    const prompt = options.prompt || `Generate content for ${path.basename(filePath)}`;
-    const generatedContent = await generateMdxContent(prompt, options.schema || {}, frontmatter);
-    
-    const outputDir = path.dirname(filePath);
-    await fs.mkdir(outputDir, { recursive: true });
-    
-    await fs.writeFile(filePath, generatedContent);
-    console.log(`Successfully ${options.mode === 'edit' ? 'updated' : 'created'} file: ${filePath}`);
-    
-    return { filePath, success: true };
+
+    const prompt = options.prompt || `Generate content for ${path.basename(filePath)}`
+    const generatedContent = await generateMdxContent(prompt, options.schema || {}, frontmatter)
+
+    const outputDir = path.dirname(filePath)
+    await fs.mkdir(outputDir, { recursive: true })
+
+    await fs.writeFile(filePath, generatedContent)
+    console.log(`Successfully ${options.mode === 'edit' ? 'updated' : 'created'} file: ${filePath}`)
+
+    return { filePath, success: true }
   } catch (err) {
-    console.error(`Error processing file ${filePath}:`, err);
-    throw err;
+    console.error(`Error processing file ${filePath}:`, err)
+    throw err
   }
 }
 
 export async function generateMdxContent(prompt: string, schema: MDXSchema = {}, existingFrontmatter: MDXSchema = {}): Promise<string> {
-  const content = await generateAIContent(prompt, { schema });
-  
+  const content = await generateAIContent(prompt, { schema })
+
   const frontmatter = {
     ...existingFrontmatter,
     ...schema,
     title: schema.title || existingFrontmatter.title || 'Generated MDX Content',
     description: schema.description || existingFrontmatter.description || 'Content generated with mdxai',
-    date: existingFrontmatter.date || new Date().toISOString().split('T')[0]
-  };
-  
-  const frontmatterStr = formatFrontmatter(frontmatter);
-  
+    date: existingFrontmatter.date || new Date().toISOString().split('T')[0],
+  }
+
+  const frontmatterStr = formatFrontmatter(frontmatter)
+
   return `---
 ${frontmatterStr}
 ---
 
-${content}`;
+${content}`
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {
-    await fs.access(filePath);
-    return true;
+    await fs.access(filePath)
+    return true
   } catch {
-    return false;
+    return false
   }
 }
 
 function parseFrontmatter(frontmatterStr: string): MDXSchema {
-  const frontmatter: MDXSchema = {};
-  const lines = frontmatterStr.split('\n');
-  
+  const frontmatter: MDXSchema = {}
+  const lines = frontmatterStr.split('\n')
+
   for (const line of lines) {
-    const match = line.match(/^([^:]+):\s*(.*)$/);
+    const match = line.match(/^([^:]+):\s*(.*)$/)
     if (match && match[1] && match[2]) {
-      const key = match[1].trim();
-      const value = match[2].trim();
-      frontmatter[key] = value;
+      const key = match[1].trim()
+      const value = match[2].trim()
+      frontmatter[key] = value
     }
   }
-  
-  return frontmatter;
+
+  return frontmatter
 }
 
 function formatFrontmatter(frontmatter: MDXSchema): string {
   return Object.entries(frontmatter)
     .map(([key, value]) => `${key}: ${value}`)
-    .join('\n');
+    .join('\n')
 }

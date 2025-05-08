@@ -49,9 +49,4 @@ export const Users: CollectionConfig = {
   ],
 }
 
-export const collections: CollectionConfig[] = [
-  Types,
-  Resources,
-  Relationships,
-  Users,
-]
+export const collections: CollectionConfig[] = [Types, Resources, Relationships, Users]

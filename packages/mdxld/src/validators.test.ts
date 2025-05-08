@@ -35,10 +35,7 @@ describe('validators', () => {
 
   describe('validateExecutableCode', () => {
     it('should validate valid executable code array', () => {
-      const code = [
-        "import { Button } from 'ui'",
-        'function example() { return "Hello" }',
-      ]
+      const code = ["import { Button } from 'ui'", 'function example() { return "Hello" }']
       expect(validateExecutableCode(code)).toBe(true)
     })
 
@@ -69,10 +66,7 @@ describe('validators', () => {
 
   describe('validateUIComponents', () => {
     it('should validate valid UI components array', () => {
-      const components = [
-        '<Button>Click me</Button>',
-        '<Card><CardTitle>Title</CardTitle></Card>',
-      ]
+      const components = ['<Button>Click me</Button>', '<Card><CardTitle>Title</CardTitle></Card>']
       expect(validateUIComponents(components)).toBe(true)
     })
 

@@ -1,122 +1,122 @@
-import { processFile } from './mdx-processor.js';
-import { loadConfig } from './config.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { glob } from 'glob';
+import { processFile } from './mdx-processor.js'
+import { loadConfig } from './config.js'
+import fs from 'fs/promises'
+import path from 'path'
+import { glob } from 'glob'
 
 interface MDXAIOptions {
-  apiKey?: string;
-  model?: string;
-  outputDir?: string;
-  templates?: Record<string, unknown>;
-  mode?: 'generate' | 'edit';
-  [key: string]: unknown;
+  apiKey?: string
+  model?: string
+  outputDir?: string
+  templates?: Record<string, unknown>
+  mode?: 'generate' | 'edit'
+  [key: string]: unknown
 }
 
 export class CLI {
   async init() {
-    console.log('Initializing mdxai configuration...');
+    console.log('Initializing mdxai configuration...')
     const config = {
       apiKey: process.env.OPENAI_API_KEY || '',
       model: 'gpt-4o',
       outputDir: './output',
-      templates: {}
-    };
-    
+      templates: {},
+    }
+
     try {
-      await fs.writeFile('.mdxai.json', JSON.stringify(config, null, 2));
-      console.log('Configuration file created: .mdxai.json');
+      await fs.writeFile('.mdxai.json', JSON.stringify(config, null, 2))
+      console.log('Configuration file created: .mdxai.json')
     } catch (err) {
-      console.error('Failed to create configuration file:', err);
-      throw err;
+      console.error('Failed to create configuration file:', err)
+      throw err
     }
   }
-  
+
   async generate(targetPath: string, options: MDXAIOptions = {}) {
     if (!targetPath) {
-      throw new Error('Path is required for generate command');
+      throw new Error('Path is required for generate command')
     }
-    
-    console.log(`Generating MDX content for: ${targetPath}`);
-    const config = await loadConfig();
-    const mergedOptions = { ...config, ...options };
-    
+
+    console.log(`Generating MDX content for: ${targetPath}`)
+    const config = await loadConfig()
+    const mergedOptions = { ...config, ...options }
+
     try {
       if ((await fs.stat(targetPath).catch(() => null))?.isDirectory()) {
-        const mdxFiles = await this.findMdxFiles(targetPath);
+        const mdxFiles = await this.findMdxFiles(targetPath)
         for (const file of mdxFiles) {
-          await processFile(file, { ...mergedOptions, mode: 'generate' });
+          await processFile(file, { ...mergedOptions, mode: 'generate' })
         }
       } else {
-        await processFile(targetPath, { ...mergedOptions, mode: 'generate' });
+        await processFile(targetPath, { ...mergedOptions, mode: 'generate' })
       }
-      console.log('Generation completed successfully');
+      console.log('Generation completed successfully')
     } catch (err) {
-      console.error('Generation failed:', err);
-      throw err;
+      console.error('Generation failed:', err)
+      throw err
     }
   }
-  
+
   async edit(targetPath: string, options: MDXAIOptions = {}) {
     if (!targetPath) {
-      throw new Error('Path is required for edit command');
+      throw new Error('Path is required for edit command')
     }
-    
-    console.log(`Editing MDX content in: ${targetPath}`);
-    const config = await loadConfig();
-    const mergedOptions = { ...config, ...options };
-    
+
+    console.log(`Editing MDX content in: ${targetPath}`)
+    const config = await loadConfig()
+    const mergedOptions = { ...config, ...options }
+
     try {
       if ((await fs.stat(targetPath).catch(() => null))?.isDirectory()) {
-        const mdxFiles = await this.findMdxFiles(targetPath);
+        const mdxFiles = await this.findMdxFiles(targetPath)
         for (const file of mdxFiles) {
-          await processFile(file, { ...mergedOptions, mode: 'edit' });
+          await processFile(file, { ...mergedOptions, mode: 'edit' })
         }
       } else {
-        await processFile(targetPath, { ...mergedOptions, mode: 'edit' });
+        await processFile(targetPath, { ...mergedOptions, mode: 'edit' })
       }
-      console.log('Edit completed successfully');
+      console.log('Edit completed successfully')
     } catch (err) {
-      console.error('Edit failed:', err);
-      throw err;
+      console.error('Edit failed:', err)
+      throw err
     }
   }
-  
+
   async batch(pattern: string, options: MDXAIOptions = {}) {
     if (!pattern) {
-      throw new Error('Pattern is required for batch command');
+      throw new Error('Pattern is required for batch command')
     }
-    
-    console.log(`Processing files matching pattern: ${pattern}`);
-    const config = await loadConfig();
-    const mergedOptions = { ...config, ...options };
-    
+
+    console.log(`Processing files matching pattern: ${pattern}`)
+    const config = await loadConfig()
+    const mergedOptions = { ...config, ...options }
+
     try {
-      const files = await glob(pattern);
+      const files = await glob(pattern)
       if (files.length === 0) {
-        console.log('No files found matching the pattern');
-        return;
+        console.log('No files found matching the pattern')
+        return
       }
-      
-      console.log(`Found ${files.length} files to process`);
+
+      console.log(`Found ${files.length} files to process`)
       for (const file of files) {
-        await processFile(file, mergedOptions);
+        await processFile(file, mergedOptions)
       }
-      console.log('Batch processing completed successfully');
+      console.log('Batch processing completed successfully')
     } catch (err) {
-      console.error('Batch processing failed:', err);
-      throw err;
+      console.error('Batch processing failed:', err)
+      throw err
     }
   }
-  
+
   private async findMdxFiles(directory: string) {
     try {
-      const pattern = path.join(directory, '**/*.mdx');
-      const files = await glob(pattern);
-      return files;
+      const pattern = path.join(directory, '**/*.mdx')
+      const files = await glob(pattern)
+      return files
     } catch (err) {
-      console.error('Error finding MDX files:', err);
-      throw err;
+      console.error('Error finding MDX files:', err)
+      throw err
     }
   }
 }

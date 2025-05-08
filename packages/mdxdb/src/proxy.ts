@@ -8,10 +8,7 @@ import { PayloadHandler } from './payload-handler'
  * @param path Path segments
  * @returns Proxy object
  */
-export function createProxy(
-  handler: MDXFileSystemHandler | PayloadHandler,
-  path: string[] = []
-): MDXDBProxy {
+export function createProxy(handler: MDXFileSystemHandler | PayloadHandler, path: string[] = []): MDXDBProxy {
   const proxyHandler = {
     get(target: ProxyTarget, prop: string | symbol): any {
       if (prop === 'set') {
@@ -19,21 +16,21 @@ export function createProxy(
           return handler.writeMDX([...target._path, id], data)
         }
       }
-      
+
       if (prop === 'get') {
         return async (id: string) => {
           return handler.readMDX([...target._path, id])
         }
       }
-      
+
       if (prop === 'list') {
         return async () => {
           return handler.listMDX(target._path)
         }
       }
-      
+
       return createProxy(handler, [...target._path, String(prop)])
-    }
+    },
   }
 
   return new Proxy({ _path: path }, proxyHandler) as unknown as MDXDBProxy

@@ -11,7 +11,7 @@ import { MDXData, MDXListItem } from './types'
 export async function writeMDX(pathSegments: string[], data: MDXData): Promise<MDXData> {
   const filePath = `.db/${pathSegments.join('/')}.mdx`
   await fs.mkdir(path.dirname(filePath), { recursive: true })
-  
+
   const content = `---\n${JSON.stringify(data, null, 2)}\n---\n`
   await fs.writeFile(filePath, content)
   return data
@@ -49,7 +49,7 @@ export async function listMDX(pathSegments: string[]): Promise<MDXListItem[]> {
   try {
     await fs.mkdir(dirPath, { recursive: true })
     const files = await fs.readdir(dirPath)
-    
+
     const results: MDXListItem[] = []
     for (const file of files) {
       if (file.endsWith('.mdx')) {
@@ -60,7 +60,7 @@ export async function listMDX(pathSegments: string[]): Promise<MDXListItem[]> {
         }
       }
     }
-    
+
     return results
   } catch (error: any) {
     if (error.code === 'ENOENT') {

@@ -33,7 +33,10 @@ describe('Payload backend', () => {
 
   it('should find documents using Payload', async () => {
     mockPayload.find.mockResolvedValue({
-      docs: [{ id: 'doc1', name: 'Test' }, { id: 'doc2', name: 'Test 2' }],
+      docs: [
+        { id: 'doc1', name: 'Test' },
+        { id: 'doc2', name: 'Test 2' },
+      ],
       totalDocs: 2,
       page: 1,
       totalPages: 1,

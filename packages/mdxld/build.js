@@ -3,10 +3,8 @@ import { join } from 'path'
 
 async function buildPackage() {
   try {
-    const entryPoints = ['index.js', 'ast.js', 'parser.js'].map(file => 
-      join('dist', file)
-    )
-    
+    const entryPoints = ['index.js', 'ast.js', 'parser.js'].map((file) => join('dist', file))
+
     await build({
       entryPoints,
       outdir: 'dist',
@@ -18,7 +16,7 @@ async function buildPackage() {
       sourcemap: true,
       allowOverwrite: true,
     })
-    
+
     console.log('Build completed successfully')
   } catch (error) {
     console.error('Build failed:', error)

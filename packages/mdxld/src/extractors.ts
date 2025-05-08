@@ -16,7 +16,7 @@ export function extractExecutableCode(ast: Root): string[] {
   })
 
   visit(ast, 'code', (node) => {
-    const codeNode = node as Code;
+    const codeNode = node as Code
     if (['js', 'javascript', 'jsx', 'ts', 'typescript', 'tsx'].includes(codeNode.lang || '')) {
       executableCode.push(codeNode.value)
     }
@@ -61,9 +61,7 @@ function serializeAttributes(attributes: Record<string, any>[]): string {
   return attributes
     .map((attr) => {
       if (attr && typeof attr === 'object' && 'type' in attr && attr.type === 'mdxJsxAttribute' && 'name' in attr) {
-        const value = typeof attr.value === 'string' 
-          ? `"${attr.value}"` 
-          : '{...}' // Placeholder for complex values
+        const value = typeof attr.value === 'string' ? `"${attr.value}"` : '{...}' // Placeholder for complex values
         return ` ${attr.name}=${value}`
       }
       return ''

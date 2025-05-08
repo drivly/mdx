@@ -49,25 +49,25 @@ export const findIndexFile = (dir) => {
  */
 export const resolvePath = (path) => {
   const absolutePath = resolve(process.cwd(), path)
-  
+
   if (!existsSync(absolutePath)) {
     const withMdx = `${absolutePath}.mdx`
     const withMd = `${absolutePath}.md`
-    
+
     if (existsSync(withMdx)) return withMdx
     if (existsSync(withMd)) return withMd
-    
+
     return null
   }
-  
+
   if (isDirectory(absolutePath)) {
     return findIndexFile(absolutePath)
   }
-  
+
   if (isMarkdownFile(absolutePath)) {
     return absolutePath
   }
-  
+
   return null
 }
 
@@ -82,18 +82,18 @@ export const getAllMarkdownFiles = (dir) => {
   const results = []
 
   const files = fs.readdirSync(dir)
-  
+
   for (const file of files) {
     const filePath = path.join(dir, file)
     const stat = fs.statSync(filePath)
-    
+
     if (stat.isDirectory()) {
       results.push(...getAllMarkdownFiles(filePath))
     } else if (isMarkdownFile(filePath)) {
       results.push(filePath)
     }
   }
-  
+
   return results
 }
 
@@ -107,18 +107,18 @@ export const filePathToRoutePath = (filePath, basePath) => {
   let routePath = filePath.slice(basePath.length)
   const ext = extname(routePath)
   routePath = routePath.slice(0, -ext.length)
-  
+
   if (basename(routePath) === 'index') {
     routePath = dirname(routePath)
   }
-  
+
   if (!routePath.startsWith('/')) {
     routePath = `/${routePath}`
   }
-  
+
   if (routePath.endsWith('/') && routePath !== '/') {
     routePath = routePath.slice(0, -1)
   }
-  
+
   return routePath
 }

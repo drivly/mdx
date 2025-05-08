@@ -8,28 +8,18 @@ import { join, resolve } from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import { 
-  isDirectory, 
-  isMarkdownFile, 
-  findIndexFile, 
-  resolvePath, 
-  getAllMarkdownFiles, 
-  filePathToRoutePath 
-} from '../src/utils/file-resolution.js'
+import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const packageJsonPath = join(__dirname, '..', 'package.json')
-const packageJson = JSON.parse(await import('fs').then(fs => fs.readFileSync(packageJsonPath, 'utf8')))
+const packageJson = JSON.parse(await import('fs').then((fs) => fs.readFileSync(packageJsonPath, 'utf8')))
 const version = packageJson.version
 
 const program = new Command()
 
-program
-  .name('mdxe')
-  .description('Zero-config CLI for serving Markdown and MDX files')
-  .version(version)
+program.name('mdxe').description('Zero-config CLI for serving Markdown and MDX files').version(version)
 
 const findConfigFile = (dir, filename) => {
   const configPath = join(dir, filename)
@@ -42,29 +32,31 @@ const ensureConfigFiles = async (targetDir) => {
   const configFiles = [
     { src: '../src/config/next.config.js', dest: 'next.config.js' },
     { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
-    { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' }
+    { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' },
   ]
 
   const fs = await import('fs/promises')
-  
+
   for (const { src, dest } of configFiles) {
     const sourcePath = join(__dirname, src)
     const destPath = join(targetDir, dest)
-    
+
     if (!existsSync(destPath)) {
       await fs.copyFile(sourcePath, destPath)
       createdConfigFiles.add(destPath)
     }
   }
-  
+
   const appDir = join(targetDir, 'app')
   if (!existsSync(appDir)) {
     await fs.mkdir(appDir, { recursive: true })
     createdConfigFiles.add(appDir)
-    
+
     const layoutPath = join(appDir, 'layout.tsx')
     if (!existsSync(layoutPath)) {
-      await fs.writeFile(layoutPath, `
+      await fs.writeFile(
+        layoutPath,
+        `
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -72,7 +64,8 @@ export default function RootLayout({ children }) {
     </html>
   )
 }
-`)
+`,
+      )
       createdConfigFiles.add(layoutPath)
     }
   }
@@ -80,9 +73,9 @@ export default function RootLayout({ children }) {
 
 const cleanupConfigFiles = async () => {
   if (createdConfigFiles.size === 0) return
-  
+
   const fs = await import('fs/promises')
-  
+
   for (const filePath of createdConfigFiles) {
     try {
       if (existsSync(filePath)) {
@@ -96,24 +89,24 @@ const cleanupConfigFiles = async () => {
       console.warn(`Warning: Could not remove temporary file ${filePath}: ${error.message}`)
     }
   }
-  
+
   createdConfigFiles.clear()
 }
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
-  
+
   try {
     await ensureConfigFiles(userCwd)
-    
+
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const mdxeNextBin = resolve(__dirname, '..', 'node_modules', '.bin', 'next')
-    
+
     const localNextExists = existsSync(localNextBin)
     const mdxeNextExists = existsSync(mdxeNextBin)
-    
+
     let binPath, cmd, cmdArgs
-    
+
     if (localNextExists) {
       binPath = localNextBin
       cmd = binPath
@@ -126,17 +119,17 @@ const runNextCommand = async (command, args = []) => {
       cmd = 'npx'
       cmdArgs = ['next', command, ...args]
     }
-    
-    const child = spawn(cmd, cmdArgs, { 
+
+    const child = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
-      shell: true
+      shell: true,
     })
-    
+
     child.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
       cleanupConfigFiles().finally(() => process.exit(1))
     })
-    
+
     child.on('close', (code) => {
       cleanupConfigFiles().finally(() => process.exit(code))
     })
@@ -178,22 +171,20 @@ program
     await runNextCommand('lint')
   })
 
-program
-  .argument('[path]', 'Path to a markdown file or directory', '.')
-  .action(async (path) => {
-    const resolvedPath = resolvePath(path)
-    
-    if (!resolvedPath) {
-      console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
-      console.error('Make sure the path exists and is either:')
-      console.error('  - A .md or .mdx file')
-      console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
-      process.exit(1)
-    }
-    
-    console.log(`Serving markdown file: ${resolvedPath}`)
-    
-    await runNextCommand('dev')
-  })
+program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
+  const resolvedPath = resolvePath(path)
+
+  if (!resolvedPath) {
+    console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
+    console.error('Make sure the path exists and is either:')
+    console.error('  - A .md or .mdx file')
+    console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
+    process.exit(1)
+  }
+
+  console.log(`Serving markdown file: ${resolvedPath}`)
+
+  await runNextCommand('dev')
+})
 
 program.parse(process.argv)

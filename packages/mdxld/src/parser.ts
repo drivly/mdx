@@ -8,14 +8,14 @@ import type { MDXLD, ParseOptions, StringifyOptions } from './types.js'
  */
 function extractFrontmatter(mdx: string): { frontmatter: string | null; content: string } {
   const frontmatterMatch = mdx.match(/^---\n([\s\S]*?)\n---\n/)
-  
+
   if (!frontmatterMatch) {
     return { frontmatter: null, content: mdx }
   }
-  
+
   const frontmatter = frontmatterMatch[1] || null
   const content = mdx.slice(frontmatterMatch[0].length)
-  
+
   return { frontmatter, content }
 }
 
@@ -24,34 +24,31 @@ function extractFrontmatter(mdx: string): { frontmatter: string | null; content:
  * @param frontmatter - The parsed frontmatter object
  * @returns The processed data and metadata
  */
-function processFrontmatter(frontmatter: Record<string, unknown>): { 
-  data: Record<string, unknown>; 
-  metadata: Partial<MDXLD>;
+function processFrontmatter(frontmatter: Record<string, unknown>): {
+  data: Record<string, unknown>
+  metadata: Partial<MDXLD>
 } {
   const data: Record<string, unknown> = {}
   const metadata: Partial<MDXLD> = {}
-  
+
   for (const key in frontmatter) {
     if (Object.prototype.hasOwnProperty.call(frontmatter, key)) {
       const value = frontmatter[key]
-      
+
       // Handle @ and $ prefixed properties
       if (key.startsWith('@') || key.startsWith('$')) {
-        const unquotedKey = key.startsWith('@') 
-          ? key.substring(1) 
-          : key.substring(1)
-        
+        const unquotedKey = key.startsWith('@') ? key.substring(1) : key.substring(1)
+
         // Only add if it's a valid key in MDXLD
-        if (unquotedKey && 
-            ['type', 'context', 'id', 'language', 'base', 'vocab', 'list', 'set', 'reverse'].includes(unquotedKey)) {
-          (metadata as Record<string, unknown>)[unquotedKey] = value
+        if (unquotedKey && ['type', 'context', 'id', 'language', 'base', 'vocab', 'list', 'set', 'reverse'].includes(unquotedKey)) {
+          ;(metadata as Record<string, unknown>)[unquotedKey] = value
         }
       } else {
         data[key] = value
       }
     }
   }
-  
+
   return { data, metadata }
 }
 
@@ -63,20 +60,20 @@ function processFrontmatter(frontmatter: Record<string, unknown>): {
  */
 export function parse(mdx: string, options: ParseOptions = {}): MDXLD {
   const { frontmatter, content } = extractFrontmatter(mdx)
-  
+
   const result: MDXLD = {
     data: {},
     content,
   }
-  
+
   if (frontmatter) {
     try {
       const parsedYaml = yaml.parse(frontmatter)
-      
+
       if (typeof parsedYaml === 'object' && parsedYaml !== null) {
         const { data, metadata } = processFrontmatter(parsedYaml)
         result.data = data
-        
+
         // Copy metadata properties to result
         Object.assign(result, metadata)
       }
@@ -85,7 +82,7 @@ export function parse(mdx: string, options: ParseOptions = {}): MDXLD {
       console.error('Failed to parse frontmatter:', error)
     }
   }
-  
+
   return result
 }
 
@@ -98,23 +95,23 @@ export function parse(mdx: string, options: ParseOptions = {}): MDXLD {
 export function stringify(mdxld: MDXLD, options: StringifyOptions = {}): string {
   const { data = {}, content = '', ...metadata } = mdxld
   const yamlData: Record<string, unknown> = { ...data }
-  
+
   // Add metadata with @ or $ prefix
   for (const key in metadata) {
-    if (Object.prototype.hasOwnProperty.call(metadata, key) && 
-        key !== 'data' && 
-        key !== 'content' &&
-        key !== 'ast' &&
-        key !== 'executableCode' &&
-        key !== 'uiComponents') {
+    if (
+      Object.prototype.hasOwnProperty.call(metadata, key) &&
+      key !== 'data' &&
+      key !== 'content' &&
+      key !== 'ast' &&
+      key !== 'executableCode' &&
+      key !== 'uiComponents'
+    ) {
       const prefix = options.useAtPrefix ? '@' : '$'
       yamlData[`${prefix}${key}`] = (metadata as Record<string, unknown>)[key]
     }
   }
-  
-  const frontmatter = Object.keys(yamlData).length > 0 
-    ? `---\n${yaml.stringify(yamlData)}---\n\n` 
-    : ''
-  
+
+  const frontmatter = Object.keys(yamlData).length > 0 ? `---\n${yaml.stringify(yamlData)}---\n\n` : ''
+
   return `${frontmatter}${content}`
 }

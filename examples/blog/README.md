@@ -36,9 +36,7 @@ import { Button, Card } from 'mdxui'
 
 <Button>Click Me</Button>
 
-<Card title="MDXE Card">
-  This is a card component from mdxui.
-</Card>
+<Card title='MDXE Card'>This is a card component from mdxui.</Card>
 ```
 
 ## Styling with Tailwind
