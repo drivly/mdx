@@ -1,13 +1,7 @@
-import nextra from 'nextra'
-
-const withNextra = nextra({
-  mdxOptions: {
-    remarkPlugins: [],
-    rehypePlugins: [],
-  },
-})
-
-export default withNextra({
+/**
+ * @type {import('next').NextConfig}
+ */
+const nextConfig = {
   reactStrictMode: true,
   experimental: {
     turbo: {
@@ -17,4 +11,6 @@ export default withNextra({
     }
   },
   distDir: '.next'
-})
+}
+
+export default nextConfig
