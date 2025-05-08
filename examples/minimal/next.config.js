@@ -10,16 +10,11 @@ const withNextra = nextra({
 
 export default withNextra({
   reactStrictMode: true,
-  swcMinify: true,
-  postcssOptions: {
-    plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
-    },
-  },
-  turbopack: {
-    resolveAlias: {
-      'next-mdx-import-source-file': './mdx-components.js'
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        'next-mdx-import-source-file': './mdx-components.js'
+      }
     }
   }
 })

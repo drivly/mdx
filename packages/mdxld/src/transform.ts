@@ -15,7 +15,7 @@ export function transformMarkdownToJson(ast: Root, options: MarkdownJSONOptions 
   const links: Record<string, string> = {}
   let currentSection: Record<string, unknown> = result
   let currentHeader: string | null = null
-  let headerCounts: Record<string, number> = {}
+  const headerCounts: Record<string, number> = {}
 
   visit(ast, (node) => {
     if (node.type === 'heading') {

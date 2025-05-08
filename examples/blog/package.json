@@ -10,8 +10,6 @@
   },
   "dependencies": {
     "mdxe": "workspace:*",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "next": "^14.0.0"
+    "nextra": "^4.2.17"
   }
 }
