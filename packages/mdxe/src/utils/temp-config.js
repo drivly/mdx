@@ -1,17 +1,18 @@
-const path = require('path')
-const fs = require('fs')
-const os = require('os')
-const { join, resolve } = path
-const { existsSync, mkdirSync } = fs
-const { tmpdir } = os
+import { join, resolve, dirname } from 'path'
+import { existsSync, mkdirSync } from 'fs'
+import { tmpdir } from 'os'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 /**
  * Creates a temporary Next.js configuration directory
  * @param {string} contentDir - The content directory to use
  * @returns {object} - Object containing paths and cleanup function
  */
-async function createTempNextConfig(contentDir) {
-  const fsPromises = require('fs/promises')
+export async function createTempNextConfig(contentDir) {
+  const fs = await import('fs/promises')
   const randomId = Math.random().toString(36).substring(2, 15)
   const tempDir = join(tmpdir(), `mdxe-${randomId}`)
   
@@ -30,10 +31,10 @@ async function createTempNextConfig(contentDir) {
   ]
   
   for (const { src, dest } of configFiles) {
-    await fsPromises.copyFile(src, dest)
+    await fs.copyFile(src, dest)
   }
   
-  await fsPromises.writeFile(
+  await fs.writeFile(
     join(appDir, 'layout.tsx'),
     `
 export default function RootLayout({ children }) {
@@ -46,7 +47,7 @@ export default function RootLayout({ children }) {
 `
   )
   
-  await fsPromises.writeFile(
+  await fs.writeFile(
     join(appDir, 'page.tsx'),
     `
 import { useEffect, useState } from 'react'
@@ -111,7 +112,7 @@ export default function Page() {
   
   const cleanup = async () => {
     try {
-      await fsPromises.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, { recursive: true, force: true })
     } catch (error) {
       console.warn(`Warning: Could not remove temporary directory ${tempDir}: ${error.message}`)
     }
@@ -123,5 +124,3 @@ export default function Page() {
     cleanup
   }
 }
-
-module.exports = { createTempNextConfig }
