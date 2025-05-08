@@ -23,6 +23,13 @@ export async function createTempNextConfig(contentDir) {
   const appDir = join(tempDir, 'app')
   mkdirSync(appDir, { recursive: true })
   
+  // Create API directory for server components
+  const apiDir = join(appDir, 'api')
+  mkdirSync(apiDir, { recursive: true })
+  
+  const contentApiDir = join(apiDir, 'content')
+  mkdirSync(contentApiDir, { recursive: true })
+  
   const mdxeDir = resolve(__dirname, '..', '..')
   const configFiles = [
     { src: join(mdxeDir, 'src', 'config', 'next.config.js'), dest: join(tempDir, 'next.config.js') },
@@ -47,24 +54,22 @@ export default function RootLayout({ children }) {
 `
   )
   
+  // Create the API route for content listing
   await fs.writeFile(
-    join(appDir, 'page.tsx'),
-    `"use client"
+    join(contentApiDir, 'route.js'),
+    `import { readdir } from 'fs/promises'
+import { join } from 'path'
 
-import { useEffect, useState } from 'react'
-import path from 'path'
-import fs from 'fs/promises'
-
-async function loadContent() {
+export async function GET() {
   try {
     const contentDir = process.env.MDXE_CONTENT_DIR || '.'
     const filePaths = []
     
     async function findMarkdownFiles(dir) {
-      const entries = await fs.readdir(dir, { withFileTypes: true })
+      const entries = await readdir(dir, { withFileTypes: true })
       
       for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name)
+        const fullPath = join(dir, entry.name)
         
         if (entry.isDirectory()) {
           await findMarkdownFiles(fullPath)
@@ -75,19 +80,58 @@ async function loadContent() {
     }
     
     await findMarkdownFiles(contentDir)
-    return filePaths
+    
+    return Response.json({ files: filePaths })
   } catch (error) {
     console.error('Error loading content:', error)
-    return []
+    return Response.json({ files: [], error: error.message }, { status: 500 })
   }
 }
+`
+  )
+  
+  // Create the client page component
+  await fs.writeFile(
+    join(appDir, 'page.tsx'),
+    `"use client"
+
+import { useEffect, useState } from 'react'
 
 export default function Page() {
   const [contentPaths, setContentPaths] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
   
   useEffect(() => {
-    loadContent().then(setContentPaths)
+    async function fetchContent() {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/content')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch content')
+        }
+        
+        const data = await response.json()
+        setContentPaths(data.files)
+      } catch (err) {
+        console.error('Error fetching content:', err)
+        setError(err.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchContent()
   }, [])
+  
+  if (isLoading) {
+    return <div className="p-4">Loading content...</div>
+  }
+  
+  if (error) {
+    return <div className="p-4 text-red-500">Error: {error}</div>
+  }
   
   return (
     <div className="p-4">
@@ -107,8 +151,7 @@ export default function Page() {
       )}
     </div>
   )
-}
-`
+}`
   )
   
   const cleanup = async () => {
