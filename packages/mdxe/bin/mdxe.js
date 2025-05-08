@@ -9,6 +9,7 @@ import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
+import { createTempNextConfig } from '../src/utils/temp-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -26,116 +27,76 @@ const findConfigFile = (dir, filename) => {
   return existsSync(configPath) ? configPath : null
 }
 
-const createdConfigFiles = new Set()
+let activeProcess = null
+let tempConfigInfo = null
 
-const ensureConfigFiles = async (targetDir) => {
-  const configFiles = [
-    { src: '../src/config/next.config.js', dest: 'next.config.js' },
-    { src: '../src/config/tailwind.config.js', dest: 'tailwind.config.js' },
-    { src: '../src/config/mdx-components.js', dest: 'mdx-components.js' },
-  ]
-
-  const fs = await import('fs/promises')
-
-  for (const { src, dest } of configFiles) {
-    const sourcePath = join(__dirname, src)
-    const destPath = join(targetDir, dest)
-
-    if (!existsSync(destPath)) {
-      await fs.copyFile(sourcePath, destPath)
-      createdConfigFiles.add(destPath)
-    }
+process.on('SIGINT', async () => {
+  if (activeProcess) {
+    activeProcess.kill('SIGINT')
   }
-
-  const appDir = join(targetDir, 'app')
-  if (!existsSync(appDir)) {
-    await fs.mkdir(appDir, { recursive: true })
-    createdConfigFiles.add(appDir)
-
-    const layoutPath = join(appDir, 'layout.tsx')
-    if (!existsSync(layoutPath)) {
-      await fs.writeFile(
-        layoutPath,
-        `
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
-`,
-      )
-      createdConfigFiles.add(layoutPath)
-    }
+  
+  if (tempConfigInfo) {
+    await tempConfigInfo.cleanup()
   }
-}
-
-const cleanupConfigFiles = async () => {
-  if (createdConfigFiles.size === 0) return
-
-  const fs = await import('fs/promises')
-
-  for (const filePath of createdConfigFiles) {
-    try {
-      if (existsSync(filePath)) {
-        const stat = await fs.stat(filePath)
-        if (stat.isDirectory()) {
-          continue
-        }
-        await fs.unlink(filePath)
-      }
-    } catch (error) {
-      console.warn(`Warning: Could not remove temporary file ${filePath}: ${error.message}`)
-    }
-  }
-
-  createdConfigFiles.clear()
-}
+  
+  process.exit(0)
+})
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
 
   try {
-    await ensureConfigFiles(userCwd)
-
+    tempConfigInfo = await createTempNextConfig(userCwd)
+    console.log(`Using temporary Next.js configuration in ${tempConfigInfo.tempDir}`)
+    
+    const mdxeModulePath = resolve(__dirname, '..')
+    
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
-    const mdxeNextBin = resolve(__dirname, '..', 'node_modules', '.bin', 'next')
+    const mdxeNextBin = resolve(mdxeModulePath, 'node_modules', '.bin', 'next')
 
-    const localNextExists = existsSync(localNextBin)
-    const mdxeNextExists = existsSync(mdxeNextBin)
+    let cmd, cmdArgs
 
-    let binPath, cmd, cmdArgs
-
-    if (localNextExists) {
-      binPath = localNextBin
-      cmd = binPath
+    if (existsSync(localNextBin)) {
+      cmd = localNextBin
       cmdArgs = [command, ...args]
-    } else if (mdxeNextExists) {
-      binPath = mdxeNextBin
-      cmd = binPath
+    } else if (existsSync(mdxeNextBin)) {
+      cmd = mdxeNextBin
       cmdArgs = [command, ...args]
     } else {
       cmd = 'npx'
       cmdArgs = ['next', command, ...args]
     }
 
-    const child = spawn(cmd, cmdArgs, {
+    console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
+    
+    activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
+      cwd: tempConfigInfo.tempDir,
+      env: {
+        ...process.env,
+        MDXE_CONTENT_DIR: userCwd,
+        MDXE_MODULE_PATH: mdxeModulePath,
+        NODE_PATH: process.env.NODE_PATH ? 
+          `${process.env.NODE_PATH}:${join(mdxeModulePath, 'node_modules')}` : 
+          join(mdxeModulePath, 'node_modules')
+      }
     })
 
-    child.on('error', (error) => {
+    activeProcess.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
-      cleanupConfigFiles().finally(() => process.exit(1))
+      tempConfigInfo.cleanup().finally(() => process.exit(1))
     })
 
-    child.on('close', (code) => {
-      cleanupConfigFiles().finally(() => process.exit(code))
+    activeProcess.on('close', (code) => {
+      tempConfigInfo.cleanup().finally(() => process.exit(code))
     })
   } catch (error) {
     console.error(`Error: ${error.message}`)
-    cleanupConfigFiles().finally(() => process.exit(1))
+    if (tempConfigInfo) {
+      await tempConfigInfo.cleanup()
+    }
+    process.exit(1)
   }
 }
 
