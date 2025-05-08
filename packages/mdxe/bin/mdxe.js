@@ -95,10 +95,10 @@ const cleanupConfigFiles = async () => {
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
+  const embeddedAppPath = resolve(__dirname, '..', 'src', 'app')
 
   try {
-    await ensureConfigFiles(userCwd)
-
+    
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const mdxeNextBin = resolve(__dirname, '..', 'node_modules', '.bin', 'next')
 
@@ -110,32 +110,37 @@ const runNextCommand = async (command, args = []) => {
     if (localNextExists) {
       binPath = localNextBin
       cmd = binPath
-      cmdArgs = [command, ...args]
+      cmdArgs = [command, embeddedAppPath, ...args]
     } else if (mdxeNextExists) {
       binPath = mdxeNextBin
       cmd = binPath
-      cmdArgs = [command, ...args]
+      cmdArgs = [command, embeddedAppPath, ...args]
     } else {
       cmd = 'npx'
-      cmdArgs = ['next', command, ...args]
+      cmdArgs = ['next', command, embeddedAppPath, ...args]
     }
 
     const child = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
+      env: {
+        ...process.env,
+        PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
+        ...process.env,
+      }
     })
 
     child.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
-      cleanupConfigFiles().finally(() => process.exit(1))
+      process.exit(1)
     })
 
     child.on('close', (code) => {
-      cleanupConfigFiles().finally(() => process.exit(code))
+      process.exit(code)
     })
   } catch (error) {
     console.error(`Error: ${error.message}`)
-    cleanupConfigFiles().finally(() => process.exit(1))
+    process.exit(1)
   }
 }
 
@@ -173,17 +178,21 @@ program
 
 program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
   const resolvedPath = resolvePath(path)
-
-  if (!resolvedPath) {
+  
+  if (!resolvedPath && path !== '.') {
     console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
     console.error('Make sure the path exists and is either:')
     console.error('  - A .md or .mdx file')
     console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
     process.exit(1)
   }
-
-  console.log(`Serving markdown file: ${resolvedPath}`)
-
+  
+  if (resolvedPath) {
+    console.log(`Serving markdown file: ${resolvedPath}`)
+  } else {
+    console.log('Starting MDX app with embedded CMS')
+  }
+  
   await runNextCommand('dev')
 })
 
