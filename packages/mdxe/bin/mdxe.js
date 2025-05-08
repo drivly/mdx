@@ -123,9 +123,12 @@ const runNextCommand = async (command, args = []) => {
     const child = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
+      cwd: embeddedAppPath,
       env: {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
+        NEXT_DIST_DIR: resolve(userCwd, '.next'),
+        APP_DIR: embeddedAppPath,
         ...process.env,
       }
     })
