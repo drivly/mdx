@@ -52,22 +52,16 @@ const runNextCommand = async (command, args = []) => {
     const mdxeNextBin = resolve(mdxeModulePath, 'node_modules', '.bin', 'next')
 
     let cmd, cmdArgs
-    
-    const extraArgs = [
-      `--app-directory=${mdxeModulePath}`,
-      `--content-directory=${userCwd}`,
-      `--dist-directory=${mdxeNextDir}`
-    ]
 
     if (existsSync(localNextBin)) {
       cmd = localNextBin
-      cmdArgs = [command, ...extraArgs, ...args]
+      cmdArgs = [command, ...args]
     } else if (existsSync(mdxeNextBin)) {
       cmd = mdxeNextBin
-      cmdArgs = [command, ...extraArgs, ...args]
+      cmdArgs = [command, ...args]
     } else {
       cmd = 'npx'
-      cmdArgs = ['next', command, ...extraArgs, ...args]
+      cmdArgs = ['next', command, ...args]
     }
 
     console.log(`Running Next.js from ${mdxeNextDir}`)
