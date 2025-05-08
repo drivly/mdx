@@ -1,8 +1,10 @@
+import type { CollectionConfig } from 'payload'
+
 /**
  * Standardized collection definitions for mdxdb
  */
 
-export const Types = {
+export const Types: CollectionConfig = {
   slug: 'types',
   fields: [
     { name: 'name', type: 'text' },
@@ -13,7 +15,7 @@ export const Types = {
   ],
 }
 
-export const Resources = {
+export const Resources: CollectionConfig = {
   slug: 'resources',
   fields: [
     { name: 'name', type: 'text' },
@@ -26,7 +28,7 @@ export const Resources = {
   ],
 }
 
-export const Relationships = {
+export const Relationships: CollectionConfig = {
   slug: 'relationships',
   fields: [
     { name: 'subject', type: 'relationship', relationTo: 'resources' },
@@ -36,7 +38,7 @@ export const Relationships = {
   ],
 }
 
-export const Users = {
+export const Users: CollectionConfig = {
   slug: 'users',
   fields: [
     { name: 'name', type: 'text' },
@@ -47,9 +49,9 @@ export const Users = {
   ],
 }
 
-export const collections = {
+export const collections: CollectionConfig[] = [
   Types,
   Resources,
   Relationships,
   Users,
-}
+]
