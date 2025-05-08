@@ -95,12 +95,15 @@ const cleanupConfigFiles = async () => {
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
-  const embeddedAppPath = resolve(__dirname, '..', 'src', 'app')
+  const mdxeRoot = resolve(__dirname, '..')
+  const embeddedAppPath = resolve(mdxeRoot, 'src')
 
   try {
+    const readmePath = resolve(userCwd, 'README.md')
+    const hasReadme = existsSync(readmePath)
     
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
-    const mdxeNextBin = resolve(__dirname, '..', 'node_modules', '.bin', 'next')
+    const mdxeNextBin = resolve(mdxeRoot, 'node_modules', '.bin', 'next')
 
     const localNextExists = existsSync(localNextBin)
     const mdxeNextExists = existsSync(mdxeNextBin)
@@ -128,7 +131,8 @@ const runNextCommand = async (command, args = []) => {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
         NEXT_DIST_DIR: resolve(userCwd, '.next'),
-        APP_DIR: embeddedAppPath,
+        USER_CWD: userCwd,
+        README_PATH: hasReadme ? readmePath : '',
         ...process.env,
       }
     })

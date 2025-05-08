@@ -14,11 +14,29 @@ export async function generateStaticParams() {
 
 async function getContent(slug: string[]) {
   const slugPath = slug.join('/')
-  const filePath = resolvePath(path.join(process.cwd(), slugPath))
+  const userCwd = process.env.USER_CWD || process.cwd()
   
-  if (filePath && isMarkdownFile(filePath)) {
-    const content = await fs.readFile(filePath, 'utf-8')
+  const userFilePath = resolvePath(path.join(userCwd, slugPath))
+  
+  if (userFilePath && isMarkdownFile(userFilePath)) {
+    const content = await fs.readFile(userFilePath, 'utf-8')
     return content
+  }
+  
+  const appFilePath = resolvePath(path.join(process.cwd(), slugPath))
+  
+  if (appFilePath && isMarkdownFile(appFilePath)) {
+    const content = await fs.readFile(appFilePath, 'utf-8')
+    return content
+  }
+  
+  if (!slugPath && process.env.README_PATH) {
+    try {
+      const content = await fs.readFile(process.env.README_PATH, 'utf-8')
+      return content
+    } catch (e) {
+      console.error('Error reading README:', e)
+    }
   }
   
   try {
