@@ -49,7 +49,8 @@ export default function RootLayout({ children }) {
   
   await fs.writeFile(
     join(appDir, 'page.tsx'),
-    `
+    `"use client"
+
 import { useEffect, useState } from 'react'
 import path from 'path'
 import fs from 'fs/promises'
