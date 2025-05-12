@@ -128,24 +128,26 @@ program
     await runNextCommand('lint')
   })
 
-program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
-  const resolvedPath = resolvePath(path)
-  
-  if (!resolvedPath && path !== '.') {
-    console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
-    console.error('Make sure the path exists and is either:')
-    console.error('  - A .md or .mdx file')
-    console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
-    process.exit(1)
-  }
-  
-  if (resolvedPath) {
-    console.log(`Serving markdown file: ${resolvedPath}`)
-  } else {
-    console.log('Starting MDX app with embedded CMS')
-  }
-  
-  await runNextCommand('dev')
-})
+if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].includes(arg))) {
+  program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
+    const resolvedPath = resolvePath(path)
+    
+    if (!resolvedPath && path !== '.') {
+      console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
+      console.error('Make sure the path exists and is either:')
+      console.error('  - A .md or .mdx file')
+      console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
+      process.exit(1)
+    }
+    
+    if (resolvedPath) {
+      console.log(`Serving markdown file: ${resolvedPath}`)
+    } else {
+      console.log('Starting MDX app with embedded CMS')
+    }
+    
+    await runNextCommand('dev')
+  })
+}
 
 program.parse(process.argv)
