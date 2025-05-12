@@ -24,10 +24,11 @@
     ]
   },
   "include": [
-    "next-env.d.ts",
-    "/Users/nathanclevenger/Projects/mdx/examples/minimal/.next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "/Users/nathanclevenger/Projects/mdx/examples/minimal/.next/types/**/*.ts",
+    "next-env.d.ts",
+    "/Users/nathanclevenger/Projects/mdx/packages/mdxe/.next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

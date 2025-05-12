@@ -71,7 +71,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
   }
   
   return (
-    <article className="prose prose-slate max-w-none p-4">
+    <article className="prose prose-slate max-w-7xl mx-auto p-4">
       <MDXRemote source={content} />
     </article>
   )

@@ -7,7 +7,7 @@ export default function RootLayout({
 }) { 
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className='prose prose-slate max-w-7xl mx-auto p-4'>{children}</body>
     </html>
   )
 }
