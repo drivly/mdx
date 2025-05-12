@@ -49,7 +49,7 @@ MDXE includes Tailwind CSS with the Typography plugin for beautiful typography:
 
 ## Learn More
 
-- [MDXE Documentation](https://mdxe.org)
+- [MDXE Documentation](https://mdxe.js.org)
 - [MDX Documentation](https://mdxjs.com)
 - [Tailwind CSS](https://tailwindcss.com)
 - [Tailwind Typography](https://tailwindcss.com/docs/typography-plugin)
