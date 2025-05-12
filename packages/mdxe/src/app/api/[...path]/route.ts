@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolvePath, isMarkdownFile, filePathToRoutePath } from '../../../../utils/file-resolution'
+import { resolvePath, isMarkdownFile, filePathToRoutePath } from '../../../utils/file-resolution'
 import fs from 'fs/promises'
 import path from 'path'
 

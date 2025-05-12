@@ -4,7 +4,7 @@ export { useMDXComponents } from './app/mdx-components'
 
 export { types } from './config/types.js'
 
-export { createPayloadClient, getPayloadConfig } from './payload'
+// export { createPayloadClient, getPayloadConfig } from './payload'
 
 export { 
   isDirectory, 

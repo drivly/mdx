@@ -3,7 +3,6 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import fs from 'fs/promises'
 import path from 'path'
 import { resolvePath, isMarkdownFile, getAllMarkdownFiles } from '../../utils/file-resolution'
-import { createPayloadClient } from '../../payload'
 
 export async function generateStaticParams() {
   const files = await getAllMarkdownFiles(process.cwd())
@@ -39,22 +38,22 @@ async function getContent(slug: string[]) {
     }
   }
   
-  try {
-    const payload = await createPayloadClient()
-    const page = await payload.find({
-      collection: 'pages',
-      where: {
-        slug: { equals: slugPath || 'index' },
-        published: { equals: true }
-      }
-    })
+  // try {
+  //   const payload = await createPayloadClient()
+  //   const page = await payload.find({
+  //     collection: 'pages',
+  //     where: {
+  //       slug: { equals: slugPath || 'index' },
+  //       published: { equals: true }
+  //     }
+  //   })
     
-    if (page.docs && page.docs.length > 0) {
-      return page.docs[0].content
-    }
-  } catch (e) {
-    console.error('Error fetching from Payload:', e)
-  }
+  //   if (page.docs && page.docs.length > 0) {
+  //     return page.docs[0].content
+  //   }
+  // } catch (e) {
+  //   console.error('Error fetching from Payload:', e)
+  // }
   
   return null
 }
