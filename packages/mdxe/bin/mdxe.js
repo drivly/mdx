@@ -44,15 +44,15 @@ process.on('SIGINT', async () => {
 
 const runNextCommand = async (command, args = []) => {
   const userCwd = process.cwd()
+  const mdxeRoot = resolve(__dirname, '..')
+  const embeddedAppPath = resolve(mdxeRoot, 'src')
 
   try {
-    tempConfigInfo = await createTempNextConfig(userCwd)
-    console.log(`Using temporary Next.js configuration in ${tempConfigInfo.tempDir}`)
-    
-    const mdxeModulePath = resolve(__dirname, '..')
+    const readmePath = resolve(userCwd, 'README.md')
+    const hasReadme = existsSync(readmePath)
     
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
-    const mdxeNextBin = resolve(mdxeModulePath, 'node_modules', '.bin', 'next')
+    const mdxeNextBin = resolve(mdxeRoot, 'node_modules', '.bin', 'next')
 
     let cmd, cmdArgs
 
@@ -72,30 +72,26 @@ const runNextCommand = async (command, args = []) => {
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
-      cwd: tempConfigInfo.tempDir,
+      cwd: embeddedAppPath,
       env: {
         ...process.env,
-        MDXE_CONTENT_DIR: userCwd,
-        MDXE_MODULE_PATH: mdxeModulePath,
-        NODE_PATH: process.env.NODE_PATH ? 
-          `${process.env.NODE_PATH}:${join(mdxeModulePath, 'node_modules')}` : 
-          join(mdxeModulePath, 'node_modules')
+        PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
+        NEXT_DIST_DIR: resolve(userCwd, '.next'),
+        USER_CWD: userCwd,
+        README_PATH: hasReadme ? readmePath : ''
       }
     })
 
     activeProcess.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
-      tempConfigInfo.cleanup().finally(() => process.exit(1))
+      process.exit(1)
     })
 
     activeProcess.on('close', (code) => {
-      tempConfigInfo.cleanup().finally(() => process.exit(code))
+      process.exit(code)
     })
   } catch (error) {
     console.error(`Error: ${error.message}`)
-    if (tempConfigInfo) {
-      await tempConfigInfo.cleanup()
-    }
     process.exit(1)
   }
 }
@@ -134,17 +130,21 @@ program
 
 program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
   const resolvedPath = resolvePath(path)
-
-  if (!resolvedPath) {
+  
+  if (!resolvedPath && path !== '.') {
     console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
     console.error('Make sure the path exists and is either:')
     console.error('  - A .md or .mdx file')
     console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
     process.exit(1)
   }
-
-  console.log(`Serving markdown file: ${resolvedPath}`)
-
+  
+  if (resolvedPath) {
+    console.log(`Serving markdown file: ${resolvedPath}`)
+  } else {
+    console.log('Starting MDX app with embedded CMS')
+  }
+  
   await runNextCommand('dev')
 })
 
