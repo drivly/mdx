@@ -91,10 +91,14 @@ describe('mdxe in consuming application', () => {
   test('mdxe dev command uses runtime Next.js configuration', async () => {
     console.log('Testing mdxe dev command with runtime Next.js configuration')
     
-    devServer = spawn('pnpm', ['dev'], { 
+    devServer = spawn('npx', ['mdxe', 'dev'], { 
       cwd: TEST_TEMP_DIR,
       shell: true,
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        PATH: `${join(TEST_TEMP_DIR, 'node_modules', '.bin')}:${process.env.PATH}`
+      }
     })
     
     let output = ''
