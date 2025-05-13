@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_OUTPUT": "standalone"
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}
