@@ -1,12 +1,14 @@
 {
   "framework": "nextjs",
-  "buildCommand": "bash -c \"pnpm build\"",
-  "devCommand": "bash -c \"pnpm dev\"",
-  "installCommand": "bash -c \"pnpm install\"",
+  "buildCommand": "cd node_modules/mdxe && node bin/mdxe.js build",
+  "devCommand": "node node_modules/mdxe/bin/mdxe.js dev",
+  "installCommand": "pnpm install",
   "outputDirectory": ".next",
   "env": {
     "NEXT_OUTPUT": "standalone",
-    "NEXT_DIST_DIR": ".next"
+    "NEXT_DIST_DIR": ".next",
+    "PAYLOAD_DB_PATH": "mdx.db",
+    "USER_CWD": "."
   },
   "rewrites": [
     { "source": "/(.*)", "destination": "/$1" }
