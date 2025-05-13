@@ -5,7 +5,8 @@
   "installCommand": "bash -c \"pnpm install\"",
   "outputDirectory": ".next",
   "env": {
-    "NEXT_OUTPUT": "standalone"
+    "NEXT_OUTPUT": "standalone",
+    "NEXT_DIST_DIR": ".next"
   },
   "rewrites": [
     { "source": "/(.*)", "destination": "/$1" }
