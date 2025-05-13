@@ -1,23 +1,10 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "buildCommand": "pnpm build",
-  "installCommand": "pnpm install",
-  "outputDirectory": ".next",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
-  "env": {
-    "NEXT_OUTPUT": "standalone",
-    "NEXT_DIST_DIR": ".next"
-  }
+  "buildCommand": false,
+  "devCommand": false,
+  "installCommand": false,
+  "framework": null,
+  "outputDirectory": ".",
+  "public": true,
+  "cleanUrls": true
 }
