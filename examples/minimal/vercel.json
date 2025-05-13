@@ -1,8 +1,9 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm build",
-  "devCommand": "pnpm dev",
-  "outputDirectory": "node_modules/mdxe/.next",
+  "buildCommand": "bash -c \"pnpm build\"",
+  "devCommand": "bash -c \"pnpm dev\"",
+  "installCommand": "bash -c \"pnpm install\"",
+  "outputDirectory": ".next",
   "env": {
     "NEXT_OUTPUT": "standalone"
   },
