@@ -2,7 +2,7 @@
   "framework": "nextjs",
   "buildCommand": "pnpm build",
   "devCommand": "pnpm dev",
-  "outputDirectory": ".next",
+  "outputDirectory": "node_modules/mdxe/.next",
   "env": {
     "NEXT_OUTPUT": "standalone"
   },
