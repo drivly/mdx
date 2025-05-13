@@ -3,21 +3,8 @@
   "buildCommand": "pnpm build",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
-  "outputDirectory": ".next",
+  "outputDirectory": "packages/mdxe/src/home/ubuntu/repos/mdx/examples/minimal/.next",
   "env": {
-    "NEXT_OUTPUT": "standalone",
-    "NEXT_DIST_DIR": ".next"
-  },
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ]
+    "NEXT_OUTPUT": "standalone"
+  }
 }
