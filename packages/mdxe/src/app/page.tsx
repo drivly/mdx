@@ -1,7 +1,6 @@
 import React from 'react'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import fs from 'fs/promises'
-import path from 'path'
 
 export default async function Page() {
   if (process.env.README_PATH) {

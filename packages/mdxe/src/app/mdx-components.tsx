@@ -1,7 +1,7 @@
 import React from 'react'
 import type { ComponentType } from 'react'
 
-type MDXComponents = Record<string, ComponentType<any>>
+type MDXComponents = Record<string, ComponentType<React.ComponentProps<any>>>
 
 const layouts = {
   ArticleLayout: ({ children }: { children: React.ReactNode }) => <div className="article-layout">{children}</div>,
@@ -21,7 +21,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     } else if (typeof userMdxComponents === 'object') {
       userComponents = userMdxComponents
     }
-  } catch (e) {
+  } catch (_) { // Underscore indicates intentionally unused parameter
   }
 
   const defaultComponents = {
