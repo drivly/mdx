@@ -1,16 +1,23 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd node_modules/mdxe && node bin/mdxe.js build",
-  "devCommand": "node node_modules/mdxe/bin/mdxe.js dev",
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
   "env": {
     "NEXT_OUTPUT": "standalone",
-    "NEXT_DIST_DIR": ".next",
-    "PAYLOAD_DB_PATH": "mdx.db",
-    "USER_CWD": "."
+    "NEXT_DIST_DIR": ".next"
   },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/$1" }
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
