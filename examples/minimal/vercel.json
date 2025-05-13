@@ -1,9 +1,9 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm build",
+  "buildCommand": "cd node_modules/mdxe/src && NEXT_DIST_DIR=.next NEXT_OUTPUT=standalone next build",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
-  "outputDirectory": "packages/mdxe/src/home/ubuntu/repos/mdx/examples/minimal/.next",
+  "outputDirectory": "node_modules/mdxe/src/.next",
   "env": {
     "NEXT_OUTPUT": "standalone"
   }
