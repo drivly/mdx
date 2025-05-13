@@ -4,6 +4,8 @@ import withMDX from '@next/mdx'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || process.env.IS_VERCEL === 'true'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,

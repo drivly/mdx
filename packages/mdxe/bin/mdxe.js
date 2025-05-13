@@ -69,6 +69,10 @@ const runNextCommand = async (command, args = []) => {
 
     console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
     
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true'
+    
+    const nextDistDir = isVercel ? '.next' : resolve(userCwd, '.next')
+    
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
@@ -76,9 +80,10 @@ const runNextCommand = async (command, args = []) => {
       env: {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
-        NEXT_DIST_DIR: resolve(userCwd, '.next'),
+        NEXT_DIST_DIR: nextDistDir,
         USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
+        README_PATH: hasReadme ? readmePath : '',
+        IS_VERCEL: isVercel ? 'true' : ''
       }
     })
 
