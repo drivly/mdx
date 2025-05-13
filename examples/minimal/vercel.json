@@ -1,10 +1,13 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm build",
+  "buildCommand": "cd node_modules/mdxe && node bin/mdxe.js build",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
-  "outputDirectory": ".next",
+  "outputDirectory": ".vercel/output/static",
   "env": {
     "NEXT_OUTPUT": "standalone"
-  }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
