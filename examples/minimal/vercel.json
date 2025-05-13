@@ -1,13 +1,23 @@
 {
+  "version": 2,
   "framework": "nextjs",
-  "buildCommand": "cd node_modules/mdxe && node bin/mdxe.js build",
-  "devCommand": "pnpm dev",
+  "buildCommand": "pnpm build",
   "installCommand": "pnpm install",
-  "outputDirectory": ".vercel/output/static",
+  "outputDirectory": ".next",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ],
   "env": {
-    "NEXT_OUTPUT": "standalone"
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+    "NEXT_OUTPUT": "standalone",
+    "NEXT_DIST_DIR": ".next"
+  }
 }
