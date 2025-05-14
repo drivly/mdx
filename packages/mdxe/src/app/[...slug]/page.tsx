@@ -58,8 +58,15 @@ async function getContent(slug: string[]) {
   return null
 }
 
-export default async function Page({ params }: { params: { slug: string[] } }) {
-  const content = await getContent(params.slug)
+type PageParams = {
+  params: {
+    slug: string[]
+  }
+}
+
+export default async function Page({ params }: PageParams) {
+  const slugArray = params.slug || []
+  const content = await getContent(slugArray)
   
   if (!content) {
     return (

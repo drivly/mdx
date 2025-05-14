@@ -69,17 +69,34 @@ const runNextCommand = async (command, args = []) => {
 
     console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
     
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true'
+    
+    const nextDistDir = isVercel ? '.next' : resolve(userCwd, '.next')
+    
+    const envVars = {
+      ...process.env,
+      PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
+      NEXT_DIST_DIR: nextDistDir,
+      USER_CWD: userCwd,
+      README_PATH: hasReadme ? readmePath : '',
+      IS_VERCEL: isVercel ? 'true' : '',
+      NEXT_TYPESCRIPT_CHECK: isVercel ? 'false' : process.env.NEXT_TYPESCRIPT_CHECK,
+      NEXT_OUTPUT: 'standalone'
+    }
+    
+    if (isVercel) {
+      console.log('Running in Vercel environment with config:', {
+        nextDistDir,
+        userCwd,
+        embeddedAppPath
+      })
+    }
+    
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
       cwd: embeddedAppPath,
-      env: {
-        ...process.env,
-        PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
-        NEXT_DIST_DIR: resolve(userCwd, '.next'),
-        USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
-      }
+      env: envVars
     })
 
     activeProcess.on('error', (error) => {
