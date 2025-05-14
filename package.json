@@ -27,5 +27,8 @@
     "printWidth": 160,
     "tabWidth": 2,
     "semi": false
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0"
   }
 }
