@@ -9,6 +9,7 @@ import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { resolvePath } from '../src/utils/file-resolution.js'
+import { createTempNextConfig } from '../src/utils/temp-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -22,13 +23,16 @@ const program = new Command()
 
 program.name('mdxe').description('Zero-config CLI for serving Markdown and MDX files').version(version)
 
-
-
 let activeProcess = null
+let tempConfigInfo = null
 
 process.on('SIGINT', async () => {
   if (activeProcess) {
     activeProcess.kill('SIGINT')
+  }
+  
+  if (tempConfigInfo) {
+    await tempConfigInfo.cleanup()
   }
   
   process.exit(0)
@@ -40,6 +44,8 @@ const runNextCommand = async (command, args = []) => {
   const embeddedAppPath = resolve(mdxeRoot, 'src')
 
   try {
+    tempConfigInfo = await createTempNextConfig(userCwd)
+    
     const readmePath = resolve(userCwd, 'README.md')
     const hasReadme = existsSync(readmePath)
     
