@@ -9,6 +9,7 @@
     "lint": "mdxe lint"
   },
   "dependencies": {
-    "mdxe": "workspace:*"
+    "mdxe": "workspace:*",
+    "next": "^15.3.0"
   }
 }
