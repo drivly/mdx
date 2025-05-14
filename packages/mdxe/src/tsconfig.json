@@ -26,9 +26,10 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
     "../../examples/minimal/.next/types/**/*.ts",
-    "next-env.d.ts"
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "/home/ubuntu/repos/mdx/examples/minimal/.next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
