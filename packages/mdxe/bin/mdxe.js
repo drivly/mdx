@@ -8,35 +8,27 @@ import { join, resolve } from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
-import { createTempNextConfig } from '../src/utils/temp-config.js'
+import { resolvePath } from '../src/utils/file-resolution.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const packageJsonPath = join(__dirname, '..', 'package.json')
-const packageJson = JSON.parse(await import('fs').then((fs) => fs.readFileSync(packageJsonPath, 'utf8')))
+const fs = await import('fs')
+const packageJson = JSON.parse(await fs.readFileSync(packageJsonPath, 'utf8'))
 const version = packageJson.version
 
 const program = new Command()
 
 program.name('mdxe').description('Zero-config CLI for serving Markdown and MDX files').version(version)
 
-const findConfigFile = (dir, filename) => {
-  const configPath = join(dir, filename)
-  return existsSync(configPath) ? configPath : null
-}
+
 
 let activeProcess = null
-let tempConfigInfo = null
 
 process.on('SIGINT', async () => {
   if (activeProcess) {
     activeProcess.kill('SIGINT')
-  }
-  
-  if (tempConfigInfo) {
-    await tempConfigInfo.cleanup()
   }
   
   process.exit(0)
@@ -71,7 +63,7 @@ const runNextCommand = async (command, args = []) => {
     
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
-      shell: true,
+      shell: process.platform === 'win32', // Only use shell when necessary
       cwd: embeddedAppPath,
       env: {
         ...process.env,
