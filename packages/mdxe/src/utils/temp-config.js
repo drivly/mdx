@@ -30,6 +30,14 @@ export async function createTempNextConfig(contentDir) {
     { src: join(mdxeDir, 'src', 'config', 'mdx-components.js'), dest: join(tempDir, 'mdx-components.js') }
   ]
   
+  // Create ESLint configuration to prevent prompts during lint
+  await fs.writeFile(
+    join(tempDir, '.eslintrc.json'),
+    JSON.stringify({
+      extends: "next/core-web-vitals"
+    }, null, 2)
+  )
+  
   for (const { src, dest } of configFiles) {
     await fs.copyFile(src, dest)
   }

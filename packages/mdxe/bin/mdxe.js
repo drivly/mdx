@@ -123,7 +123,8 @@ program
   .command('lint')
   .description('Run linting on the application')
   .action(async () => {
-    await runNextCommand('lint', ['--no-init']) // Add --no-init flag to prevent ESLint config prompts
+    // No flags needed as we're creating an ESLint config file in the temp directory
+    await runNextCommand('lint')
   })
 
 if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].includes(arg))) {
