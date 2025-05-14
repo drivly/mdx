@@ -9,6 +9,7 @@ const nextConfig = {
         'next-mdx-import-source-file': './mdx-components.js',
       },
     },
+    appDir: true,
   },
   distDir: '.next',
   output: process.env.NEXT_OUTPUT || 'standalone',
@@ -16,6 +17,7 @@ const nextConfig = {
   images: {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
   },
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
 }
 
 module.exports = nextConfig
