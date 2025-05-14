@@ -1,13 +1,18 @@
 import React from 'react'
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
-type MDXComponents = Record<string, ComponentType<React.ComponentPropsWithoutRef<any>>>
+interface MDXComponentProps {
+  children: ReactNode  // Changed from optional to required
+  [key: string]: any
+}
+
+type MDXComponents = Record<string, ComponentType<MDXComponentProps>>
 
 const layouts = {
-  ArticleLayout: ({ children }: { children: React.ReactNode }) => <div className="article-layout">{children}</div>,
-  PostLayout: ({ children }: { children: React.ReactNode }) => <div className="post-layout">{children}</div>,
-  DocsLayout: ({ children }: { children: React.ReactNode }) => <div className="docs-layout">{children}</div>,
-  ThingLayout: ({ children }: { children: React.ReactNode }) => <div className="thing-layout">{children}</div>,
+  ArticleLayout: ({ children }: MDXComponentProps) => <div className="article-layout">{children}</div>,
+  PostLayout: ({ children }: MDXComponentProps) => <div className="post-layout">{children}</div>,
+  DocsLayout: ({ children }: MDXComponentProps) => <div className="docs-layout">{children}</div>,
+  ThingLayout: ({ children }: MDXComponentProps) => <div className="thing-layout">{children}</div>,
 }
 
 export async function useMDXComponents(components: MDXComponents): Promise<MDXComponents> {
@@ -25,9 +30,9 @@ export async function useMDXComponents(components: MDXComponents): Promise<MDXCo
   }
 
   const defaultComponents = {
-    h1: ({ children }: { children: React.ReactNode }) => <h1 className="text-2xl font-bold">{children}</h1>,
-    h2: ({ children }: { children: React.ReactNode }) => <h2 className="text-xl font-bold">{children}</h2>,
-    p: ({ children }: { children: React.ReactNode }) => <p className="my-2">{children}</p>,
+    h1: ({ children }: MDXComponentProps) => <h1 className="text-2xl font-bold">{children}</h1>,
+    h2: ({ children }: MDXComponentProps) => <h2 className="text-xl font-bold">{children}</h2>,
+    p: ({ children }: MDXComponentProps) => <p className="my-2">{children}</p>,
   }
 
   return {
