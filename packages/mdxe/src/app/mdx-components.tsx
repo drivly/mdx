@@ -1,7 +1,7 @@
 import React from 'react'
 import type { ComponentType } from 'react'
 
-type MDXComponents = Record<string, ComponentType<React.ComponentProps<any>>>
+type MDXComponents = Record<string, ComponentType<React.ComponentPropsWithoutRef<any>>>
 
 const layouts = {
   ArticleLayout: ({ children }: { children: React.ReactNode }) => <div className="article-layout">{children}</div>,
@@ -10,18 +10,18 @@ const layouts = {
   ThingLayout: ({ children }: { children: React.ReactNode }) => <div className="thing-layout">{children}</div>,
 }
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
+export async function useMDXComponents(components: MDXComponents): Promise<MDXComponents> {
   let userComponents = {}
   try {
-    const userMdxComponents = require(process.cwd() + '/mdx-components.js')
-    if (userMdxComponents.default) {
-      userComponents = userMdxComponents.default
-    } else if (typeof userMdxComponents === 'function') {
+    const userMdxComponentsModule = await import(process.cwd() + '/mdx-components.js')
+    const userMdxComponents = userMdxComponentsModule.default || userMdxComponentsModule
+    
+    if (typeof userMdxComponents === 'function') {
       userComponents = userMdxComponents(components)
     } else if (typeof userMdxComponents === 'object') {
       userComponents = userMdxComponents
     }
-  } catch (_) { // Underscore indicates intentionally unused parameter
+  } catch (error) {
   }
 
   const defaultComponents = {
