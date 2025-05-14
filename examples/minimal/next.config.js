@@ -1,3 +1,5 @@
+const createMDX = require('@next/mdx')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -5,4 +7,12 @@ const nextConfig = {
   transpilePackages: ['mdxe']
 }
 
-module.exports = nextConfig
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [],
+    rehypePlugins: [],
+    providerImportSource: "@mdx-js/react"
+  }
+})
+
+module.exports = withMDX(nextConfig)
