@@ -16,6 +16,7 @@ const nextConfig = {
   images: {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
   },
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 }
 
 module.exports = nextConfig

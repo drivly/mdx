@@ -70,7 +70,7 @@ const runNextCommand = async (command, args = []) => {
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: process.platform === 'win32', // Only use shell when necessary
-      cwd: embeddedAppPath,
+      cwd: tempConfigInfo.tempDir, // Use the temp directory as the working directory
       env: {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),

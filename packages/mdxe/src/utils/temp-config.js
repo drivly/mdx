@@ -20,15 +20,8 @@ export async function createTempNextConfig(contentDir) {
     mkdirSync(tempDir, { recursive: true })
   }
   
-  const appDir = join(tempDir, 'app')
-  mkdirSync(appDir, { recursive: true })
-  
-  // Create API directory for server components
-  const apiDir = join(appDir, 'api')
-  mkdirSync(apiDir, { recursive: true })
-  
-  const contentApiDir = join(apiDir, 'content')
-  mkdirSync(contentApiDir, { recursive: true })
+  const pagesDir = join(tempDir, 'pages')
+  mkdirSync(pagesDir, { recursive: true })
   
   const mdxeDir = resolve(__dirname, '..', '..')
   const configFiles = [
@@ -41,26 +34,69 @@ export async function createTempNextConfig(contentDir) {
     await fs.copyFile(src, dest)
   }
   
+  // Create _document.js in pages directory to properly handle Html component
   await fs.writeFile(
-    join(appDir, 'layout.tsx'),
-    `
-export default function RootLayout({ children }) {
+    join(pagesDir, '_document.js'),
+    `import Document, { Html, Head, Main, NextScript } from 'next/document'
+
+export default class MyDocument extends Document {
+  render() {
+    return (
+      <Html lang="en">
+        <Head />
+        <body className="prose prose-slate max-w-7xl mx-auto p-4">
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    )
+  }
+}
+`
+  )
+  
+  // Create _app.js in pages directory to handle global styles and layouts
+  await fs.writeFile(
+    join(pagesDir, '_app.js'),
+    `import React from 'react'
+
+function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
+
+export default MyApp
+`
+  )
+  
+  // Create index.js in pages directory to serve as the main page
+  await fs.writeFile(
+    join(pagesDir, 'index.js'),
+    `import React from 'react'
+
+export default function Home() {
   return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
+    <div>
+      <h1>MDXE Content</h1>
+      <p>Welcome to your MDX content site.</p>
+    </div>
   )
 }
 `
   )
   
-  // Create the API route for content listing
+  // Create a pages API route for content listing instead of App Router API route
+  const pagesApiDir = join(pagesDir, 'api')
+  mkdirSync(pagesApiDir, { recursive: true })
+  
+  const contentApiPageDir = join(pagesApiDir, 'content')
+  mkdirSync(contentApiPageDir, { recursive: true })
+  
   await fs.writeFile(
-    join(contentApiDir, 'route.js'),
+    join(contentApiPageDir, 'index.js'),
     `import { readdir } from 'fs/promises'
 import { join } from 'path'
 
-export async function GET() {
+export default async function handler(req, res) {
   try {
     const contentDir = process.env.MDXE_CONTENT_DIR || '.'
     const filePaths = []
@@ -81,77 +117,13 @@ export async function GET() {
     
     await findMarkdownFiles(contentDir)
     
-    return Response.json({ files: filePaths })
+    res.status(200).json({ files: filePaths })
   } catch (error) {
     console.error('Error loading content:', error)
-    return Response.json({ files: [], error: error.message }, { status: 500 })
+    res.status(500).json({ files: [], error: error.message })
   }
 }
 `
-  )
-  
-  // Create the client page component
-  await fs.writeFile(
-    join(appDir, 'page.tsx'),
-    `"use client"
-
-import { useEffect, useState } from 'react'
-
-export default function Page() {
-  const [contentPaths, setContentPaths] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
-  
-  useEffect(() => {
-    async function fetchContent() {
-      try {
-        setIsLoading(true)
-        const response = await fetch('/api/content')
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch content')
-        }
-        
-        const data = await response.json()
-        setContentPaths(data.files)
-      } catch (err) {
-        console.error('Error fetching content:', err)
-        setError(err.message)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    
-    fetchContent()
-  }, [])
-  
-  if (isLoading) {
-    return <div className="p-4">Loading content...</div>
-  }
-  
-  if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>
-  }
-  
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">MDXE Content</h1>
-      {contentPaths.length === 0 ? (
-        <p>No markdown content found.</p>
-      ) : (
-        <ul className="list-disc pl-6">
-          {contentPaths.map((path, index) => (
-            <li key={index} className="mb-2">
-              <a href={'/content/' + path.replace(process.env.MDXE_CONTENT_DIR || '.', '')} className="text-blue-500 hover:underline">
-                {path.split('/').pop()}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}`
   )
   
   const cleanup = async () => {
@@ -164,7 +136,7 @@ export default function Page() {
   
   return {
     tempDir,
-    appDir,
+    pagesDir,
     cleanup
   }
 }
