@@ -2,8 +2,5 @@
   "buildCommand": "mdxe build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "pnpm install",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
-  ]
+  "installCommand": "pnpm install"
 }
