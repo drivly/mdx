@@ -1,5 +1,4 @@
 diff --git a/dist/exports/shared/index.js b/dist/exports/shared/index.js
-index 1234567..abcdef0 100644
 --- a/dist/exports/shared/index.js
 +++ b/dist/exports/shared/index.js
 @@ -1,6 +1,12 @@
