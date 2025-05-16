@@ -44,8 +44,8 @@
     "pnpm": "^9 || ^10"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp"
-    ]
+    "patchedDependencies": {
+      "@payloadcms/ui@3.33.0": "patches/@payloadcms+ui@3.33.0/+exports-shared-index.js.patch"
+    }
   }
 }
