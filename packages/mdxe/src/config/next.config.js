@@ -3,11 +3,9 @@
  */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    turbo: {
-      resolveAlias: {
-        'next-mdx-import-source-file': './mdx-components.js',
-      },
+  turbopack: {
+    resolveAlias: {
+      'next-mdx-import-source-file': './mdx-components.js',
     },
   },
   distDir: '.next',
@@ -16,6 +14,10 @@ const nextConfig = {
   images: {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
   },
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
+  useFileSystemPublicRoutes: true,
+  skipMiddlewareUrlNormalize: true,
+  skipTrailingSlashRedirect: true
 }
 
 module.exports = nextConfig

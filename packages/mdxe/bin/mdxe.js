@@ -51,6 +51,9 @@ const runNextCommand = async (command, args = []) => {
     const readmePath = resolve(userCwd, 'README.md')
     const hasReadme = existsSync(readmePath)
     
+    const { tempDir, cleanup } = await createTempNextConfig(userCwd)
+    tempConfigInfo = { cleanup }
+    
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const mdxeNextBin = resolve(mdxeRoot, 'node_modules', '.bin', 'next')
 
@@ -72,13 +75,17 @@ const runNextCommand = async (command, args = []) => {
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
-      cwd: embeddedAppPath,
+      cwd: tempDir, // Use the temporary directory with proper App Router configuration
       env: {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
         NEXT_DIST_DIR: resolve(userCwd, '.next'),
         USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
+        README_PATH: hasReadme ? readmePath : '',
+        MDXE_CONTENT_DIR: userCwd,
+        NEXT_PAGES_DIR: '',
+        NEXT_SKIP_PAGES_ROUTER: 'true',
+        NEXT_TELEMETRY_DISABLED: '1'
       }
     })
 
