@@ -5,7 +5,8 @@ import path from 'path'
 import { resolvePath, isMarkdownFile, getAllMarkdownFiles } from '../../utils/file-resolution'
 
 export async function generateStaticParams() {
-  const files = await getAllMarkdownFiles(process.cwd())
+  const userCwd = process.env.USER_CWD || process.cwd()
+  const files = await getAllMarkdownFiles(userCwd)
   return files.map(file => ({
     slug: file.split('/').filter(Boolean)
   }))

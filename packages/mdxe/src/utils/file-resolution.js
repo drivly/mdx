@@ -48,7 +48,8 @@ export const findIndexFile = (dir) => {
  * @returns {string|null} - Resolved path or null if not found
  */
 export const resolvePath = (path) => {
-  const absolutePath = resolve(process.cwd(), path)
+  const userCwd = process.env.USER_CWD || process.cwd()
+  const absolutePath = resolve(userCwd, path)
 
   if (!existsSync(absolutePath)) {
     const withMdx = `${absolutePath}.mdx`
@@ -80,18 +81,26 @@ export const getAllMarkdownFiles = (dir) => {
   const fs = require('fs')
   const path = require('path')
   const results = []
+  
+  // Use USER_CWD if provided, otherwise use the passed directory
+  const userCwd = process.env.USER_CWD || dir
+  const searchDir = dir === process.cwd() ? userCwd : dir
+  
+  try {
+    const files = fs.readdirSync(searchDir)
 
-  const files = fs.readdirSync(dir)
+    for (const file of files) {
+      const filePath = path.join(searchDir, file)
+      const stat = fs.statSync(filePath)
 
-  for (const file of files) {
-    const filePath = path.join(dir, file)
-    const stat = fs.statSync(filePath)
-
-    if (stat.isDirectory()) {
-      results.push(...getAllMarkdownFiles(filePath))
-    } else if (isMarkdownFile(filePath)) {
-      results.push(filePath)
+      if (stat.isDirectory()) {
+        results.push(...getAllMarkdownFiles(filePath))
+      } else if (isMarkdownFile(filePath)) {
+        results.push(filePath)
+      }
     }
+  } catch (error) {
+    console.error(`Error reading directory ${searchDir}:`, error)
   }
 
   return results
