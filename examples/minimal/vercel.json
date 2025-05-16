@@ -1,0 +1,6 @@
+{
+  "buildCommand": "mdxe build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "pnpm install"
+}
