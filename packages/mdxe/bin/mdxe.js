@@ -110,6 +110,44 @@ const runNextCommand = async (command, args = []) => {
         README_PATH: hasReadme ? readmePath : ''
       }
     })
+    
+    if (command === 'build') {
+      activeProcess.on('exit', async (code) => {
+        if (code === 0) {
+          console.log('Build completed successfully. Copying .next folder to user directory...')
+          
+          const mdxeNextDir = resolve(cmdCwd, '.next')
+          const userNextDir = resolve(userCwd, '.next')
+          
+          if (existsSync(mdxeNextDir) && cmdCwd !== userCwd) {
+            try {
+              await import('fs/promises').then(fs => fs.mkdir(userNextDir, { recursive: true }))
+              
+              const copyDir = async (src, dest) => {
+                const entries = await import('fs/promises').then(fs => fs.readdir(src, { withFileTypes: true }))
+                
+                for (const entry of entries) {
+                  const srcPath = resolve(src, entry.name)
+                  const destPath = resolve(dest, entry.name)
+                  
+                  if (entry.isDirectory()) {
+                    await import('fs/promises').then(fs => fs.mkdir(destPath, { recursive: true }))
+                    await copyDir(srcPath, destPath)
+                  } else {
+                    await import('fs/promises').then(fs => fs.copyFile(srcPath, destPath))
+                  }
+                }
+              }
+              
+              await copyDir(mdxeNextDir, userNextDir)
+              console.log('Successfully copied .next folder to user directory.')
+            } catch (error) {
+              console.error(`Error copying .next folder: ${error.message}`)
+            }
+          }
+        }
+      })
+    }
 
     activeProcess.on('error', (error) => {
       console.error(`Error executing command: ${error.message}`)
