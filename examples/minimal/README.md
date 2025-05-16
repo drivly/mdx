@@ -53,3 +53,23 @@ MDXE includes Tailwind CSS with the Typography plugin for beautiful typography:
 - [MDX Documentation](https://mdxjs.com)
 - [Tailwind CSS](https://tailwindcss.com)
 - [Tailwind Typography](https://tailwindcss.com/docs/typography-plugin)
+
+## Deploying to Vercel
+
+When deploying to Vercel, you can optionally create a `vercel.json` configuration file in your project root to ensure proper handling of the build directory:
+
+```json
+{
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ]
+}
+```
+
+This configuration explicitly tells Vercel to use the `.next` directory in your project root for the build output. Note that with the latest version of mdxe, this configuration is optional as the tool now automatically detects Vercel deployment environments and handles the build directory appropriately.

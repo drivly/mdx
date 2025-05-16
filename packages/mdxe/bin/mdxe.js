@@ -95,9 +95,17 @@ const runNextCommand = async (command, args = []) => {
 
     console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
     
+    const isVercelDeployment = process.env.VERCEL === '1'
     const cmdCwd = hasNextDirs ? userCwd : embeddedAppPath
     console.log(`Using directory: ${cmdCwd}`)
     
+    let nextDistDir = resolve(userCwd, '.next')
+    
+    if (isVercelDeployment) {
+      console.log('Vercel deployment detected. Ensuring .next directory is in project root.')
+      // Always use userCwd (the actual project root) instead of process.cwd() 
+      nextDistDir = resolve(userCwd, '.next')
+    }
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
@@ -105,7 +113,7 @@ const runNextCommand = async (command, args = []) => {
       env: {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
-        NEXT_DIST_DIR: resolve(userCwd, '.next'),
+        NEXT_DIST_DIR: nextDistDir,
         USER_CWD: userCwd,
         README_PATH: hasReadme ? readmePath : ''
       }
