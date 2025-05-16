@@ -32,7 +32,6 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@payloadcms/ui@3.33.0": "packages/mdxdb/patches/@payloadcms+ui@3.33.0/+exports-shared-index.js.patch"
     }
   }
 }
