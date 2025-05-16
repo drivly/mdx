@@ -27,6 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    "../examples/minimal/.next/types/**/*.ts",
     "next-env.d.ts"
   ],
   "exclude": [

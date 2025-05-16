@@ -5,6 +5,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test": "turbo run test",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
     "check-types": "turbo run check-types",
     "test": "echo \"No tests specified yet\" && exit 0",
@@ -28,5 +29,9 @@
     "printWidth": 160,
     "tabWidth": 2,
     "semi": false
+  },
+  "pnpm": {
+    "patchedDependencies": {
+    }
   }
 }

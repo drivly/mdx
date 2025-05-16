@@ -19,6 +19,7 @@
     "@payloadcms/next": "3.33.0",
     "@payloadcms/payload-cloud": "3.33.0",
     "@payloadcms/richtext-lexical": "3.33.0",
+    "date-fns": "^4.1.0",
     "graphql": "^16.8.1",
     "next": "15.3.0",
     "payload": "3.33.0",
@@ -43,8 +44,7 @@
     "pnpm": "^9 || ^10"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp"
-    ]
+    "patchedDependencies": {
+    }
   }
 }
