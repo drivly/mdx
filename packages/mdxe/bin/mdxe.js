@@ -75,7 +75,8 @@ const runNextCommand = async (command, args = []) => {
     
     if (isVercelDeployment) {
       console.log('Vercel deployment detected. Ensuring .next directory is in project root.')
-      nextDistDir = resolve(process.cwd(), '.next')
+      // Always use userCwd (the actual project root) instead of process.cwd() 
+      nextDistDir = resolve(userCwd, '.next')
     }
     
     activeProcess = spawn(cmd, cmdArgs, {

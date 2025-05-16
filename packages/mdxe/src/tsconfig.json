@@ -26,9 +26,8 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "/Users/nathanclevenger/Projects/mdx/examples/minimal/.next/types/**/*.ts",
     "next-env.d.ts",
-    "/Users/nathanclevenger/Projects/mdx/packages/mdxe/.next/types/**/*.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
