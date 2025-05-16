@@ -23,7 +23,7 @@ async function getContent(slug: string[]) {
     return content
   }
   
-  const appFilePath = resolvePath(path.join(process.cwd(), slugPath))
+  const appFilePath = resolvePath(path.join(userCwd, slugPath))
   
   if (appFilePath && isMarkdownFile(appFilePath)) {
     const content = await fs.readFile(appFilePath, 'utf-8')

@@ -13,7 +13,8 @@ const layouts = {
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   let userComponents = {}
   try {
-    const userMdxComponents = require(process.cwd() + '/mdx-components.js')
+    const userCwd = process.env.USER_CWD || process.cwd()
+    const userMdxComponents = require(userCwd + '/mdx-components.js')
     if (userMdxComponents.default) {
       userComponents = userMdxComponents.default
     } else if (typeof userMdxComponents === 'function') {

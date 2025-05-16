@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const fullPath = params.path.join('/')
-    const userCwd = process.cwd()
+    const userCwd = process.env.USER_CWD || process.cwd()
     const filePath = resolvePath(path.join(userCwd, fullPath))
     
     if (!filePath) {
