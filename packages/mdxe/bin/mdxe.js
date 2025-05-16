@@ -51,6 +51,32 @@ const runNextCommand = async (command, args = []) => {
     const readmePath = resolve(userCwd, 'README.md')
     const hasReadme = existsSync(readmePath)
     
+    const userAppDir = resolve(userCwd, 'app')
+    const userPagesDir = resolve(userCwd, 'pages')
+    const hasNextDirs = existsSync(userAppDir) || existsSync(userPagesDir)
+    
+    if ((command === 'build' || command === 'start') && !hasNextDirs) {
+      console.log('No app or pages directory found. Creating minimal app directory structure...')
+      
+      if (!existsSync(userAppDir)) {
+        await import('fs/promises').then(fs => fs.mkdir(userAppDir, { recursive: true }))
+        
+        const pageContent = `export default function Page() {
+  return <div>Welcome to your MDX app!</div>
+}`
+        await import('fs/promises').then(fs => fs.writeFile(resolve(userAppDir, 'page.js'), pageContent))
+        
+        const layoutContent = `export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}`
+        await import('fs/promises').then(fs => fs.writeFile(resolve(userAppDir, 'layout.js'), layoutContent))
+      }
+    }
+    
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const mdxeNextBin = resolve(mdxeRoot, 'node_modules', '.bin', 'next')
 
@@ -69,10 +95,13 @@ const runNextCommand = async (command, args = []) => {
 
     console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
     
+    const cmdCwd = hasNextDirs ? userCwd : embeddedAppPath
+    console.log(`Using directory: ${cmdCwd}`)
+    
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
-      cwd: embeddedAppPath,
+      cwd: cmdCwd,
       env: {
         ...process.env,
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
