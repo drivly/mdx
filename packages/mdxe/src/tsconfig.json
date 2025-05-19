@@ -28,8 +28,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "/home/ubuntu/repos/mdx/examples/blog/.next/types/**/*.ts",
+    "/home/ubuntu/repos/mdx/examples/minimal/.next/types/**/*.ts",
     "next-env.d.ts",
-    "/home/ubuntu/repos/mdx/examples/minimal/.next/types/**/*.ts"
+    "/Users/nathanclevenger/Projects/mdx/examples/minimal/.next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
