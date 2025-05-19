@@ -683,6 +683,9 @@ importers:
       typescript:
         specifier: 5.7.3
         version: 5.7.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@22.15.14)(sass@1.77.4)(terser@5.39.0)
 
   packages/mdxe:
     dependencies:
