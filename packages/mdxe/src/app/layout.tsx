@@ -6,8 +6,8 @@ export default function RootLayout({
   children: React.ReactNode 
 }) { 
   return (
-    <html lang="en">
-      <body className='prose prose-slate max-w-7xl mx-auto p-4'>{children}</body>
-    </html>
+    <div className="root-layout">
+      <div className='prose prose-slate max-w-7xl mx-auto p-4'>{children}</div>
+    </div>
   )
 }
