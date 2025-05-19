@@ -201,67 +201,10 @@ program
     try {
       await runNextCommand('build')
       
-      const userCwd = process.cwd()
-      const nextBuildDir = join(userCwd, '.next')
-      const mdxeRoot = resolve(__dirname, '..')
-      const embeddedAppPath = resolve(mdxeRoot, 'src')
-      
-      if (existsSync(nextBuildDir)) {
-        console.log('Cleaning up pages router artifacts immediately after build...')
-        const pagesDir = join(nextBuildDir, 'server', 'pages')
-        if (existsSync(pagesDir)) {
-          console.log(`Removing problematic pages directory: ${pagesDir}`)
-          fs.rmSync(pagesDir, { recursive: true, force: true })
-        }
-      }
-      
-      const sourceBuildDirInSrc = resolve(embeddedAppPath, '.next')
-      const sourceBuildDirInRoot = resolve(mdxeRoot, '.next')
-      const targetBuildDir = resolve(userCwd, '.next')
-      
-      let sourceBuildDir = null
-      if (existsSync(sourceBuildDirInSrc)) {
-        sourceBuildDir = sourceBuildDirInSrc
-      } else if (existsSync(sourceBuildDirInRoot)) {
-        sourceBuildDir = sourceBuildDirInRoot
-      }
-      
-      if (sourceBuildDir) {
-        if (existsSync(targetBuildDir)) {
-          console.log(`Removing existing build directory: ${targetBuildDir}`)
-          fs.rmSync(targetBuildDir, { recursive: true, force: true })
-        }
-        
-        console.log(`Creating new build directory: ${targetBuildDir}`)
-        fs.mkdirSync(targetBuildDir, { recursive: true })
-        
-        const targetServerDir = join(targetBuildDir, 'server')
-        fs.mkdirSync(targetServerDir, { recursive: true })
-        
-        const sourceAppDir = join(sourceBuildDir, 'server', 'app')
-        if (existsSync(sourceAppDir)) {
-          console.log(`Copying app router files from ${sourceAppDir} to ${join(targetServerDir, 'app')}`)
-          await copyDirRecursively(sourceAppDir, join(targetServerDir, 'app'))
-        }
-        
-        const sourceStaticDir = join(sourceBuildDir, 'static')
-        if (existsSync(sourceStaticDir)) {
-          console.log(`Copying static assets from ${sourceStaticDir} to ${join(targetBuildDir, 'static')}`)
-          await copyDirRecursively(sourceStaticDir, join(targetBuildDir, 'static'))
-        }
-        
-        const sourceCacheDir = join(sourceBuildDir, 'cache')
-        if (existsSync(sourceCacheDir)) {
-          console.log(`Copying cache from ${sourceCacheDir} to ${join(targetBuildDir, 'cache')}`)
-          await copyDirRecursively(sourceCacheDir, join(targetBuildDir, 'cache'))
-        }
-        
-        console.log('Build files successfully copied to your project root without pages router artifacts.')
-      } else {
-        console.log('No .next directory found to copy. Skipping copy step.')
-      }
+      console.log('Skipping all copy steps to avoid pages router artifacts.')
+      console.log('Build completed successfully.')
     } catch (error) {
-      console.error(`Error during build or copy process: ${error.message}`)
+      console.error(`Error during build process: ${error.message}`)
       process.exit(1)
     }
   })
