@@ -4,12 +4,34 @@
 
 import { Command } from 'commander'
 import { existsSync } from 'fs'
+import fs from 'fs'
 import { join, resolve } from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
 import { createTempNextConfig } from '../src/utils/temp-config.js'
+
+const copyDirRecursively = async (src, dest) => {
+  if (!existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true })
+  }
+  
+  const entries = fs.readdirSync(src, { withFileTypes: true })
+  
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name)
+    const destPath = join(dest, entry.name)
+    
+    if (entry.isDirectory()) {
+      await copyDirRecursively(srcPath, destPath)
+    } else {
+      fs.copyFileSync(srcPath, destPath)
+    }
+  }
+  
+  console.log(`Copied directory: ${src} → ${dest}`)
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -119,7 +141,23 @@ program
   .command('build')
   .description('Build the application for production')
   .action(async () => {
-    await runNextCommand('build')
+    try {
+      await runNextCommand('build')
+      
+      const userCwd = process.cwd()
+      const mdxeRoot = resolve(__dirname, '..')
+      const embeddedAppPath = resolve(mdxeRoot, 'src')
+      
+      const sourceBuildDir = resolve(embeddedAppPath, '.next')
+      const targetBuildDir = resolve(userCwd, '.next')
+      
+      console.log(`Copying Next.js build output from ${sourceBuildDir} to ${targetBuildDir}...`)
+      await copyDirRecursively(sourceBuildDir, targetBuildDir)
+      console.log('Build files successfully copied to your project root.')
+    } catch (error) {
+      console.error(`Error during build or copy process: ${error.message}`)
+      process.exit(1)
+    }
   })
 
 program
