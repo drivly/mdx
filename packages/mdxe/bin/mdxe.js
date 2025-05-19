@@ -199,11 +199,21 @@ program
   .description('Build the application for production')
   .action(async () => {
     try {
-    await runNextCommand('build', ['--no-pages'])
+      await runNextCommand('build')
       
       const userCwd = process.cwd()
+      const nextBuildDir = join(userCwd, '.next')
       const mdxeRoot = resolve(__dirname, '..')
       const embeddedAppPath = resolve(mdxeRoot, 'src')
+      
+      if (existsSync(nextBuildDir)) {
+        console.log('Cleaning up pages router artifacts immediately after build...')
+        const pagesDir = join(nextBuildDir, 'server', 'pages')
+        if (existsSync(pagesDir)) {
+          console.log(`Removing problematic pages directory: ${pagesDir}`)
+          fs.rmSync(pagesDir, { recursive: true, force: true })
+        }
+      }
       
       const sourceBuildDirInSrc = resolve(embeddedAppPath, '.next')
       const sourceBuildDirInRoot = resolve(mdxeRoot, '.next')
