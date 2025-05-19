@@ -148,12 +148,24 @@ program
       const mdxeRoot = resolve(__dirname, '..')
       const embeddedAppPath = resolve(mdxeRoot, 'src')
       
-      const sourceBuildDir = resolve(embeddedAppPath, '.next')
+      const sourceBuildDirInSrc = resolve(embeddedAppPath, '.next')
+      const sourceBuildDirInRoot = resolve(mdxeRoot, '.next')
       const targetBuildDir = resolve(userCwd, '.next')
       
-      console.log(`Copying Next.js build output from ${sourceBuildDir} to ${targetBuildDir}...`)
-      await copyDirRecursively(sourceBuildDir, targetBuildDir)
-      console.log('Build files successfully copied to your project root.')
+      let sourceBuildDir = null
+      if (existsSync(sourceBuildDirInSrc)) {
+        sourceBuildDir = sourceBuildDirInSrc
+      } else if (existsSync(sourceBuildDirInRoot)) {
+        sourceBuildDir = sourceBuildDirInRoot
+      }
+      
+      if (sourceBuildDir) {
+        console.log(`Copying Next.js build output from ${sourceBuildDir} to ${targetBuildDir}...`)
+        await copyDirRecursively(sourceBuildDir, targetBuildDir)
+        console.log('Build files successfully copied to your project root.')
+      } else {
+        console.log('No .next directory found to copy. Skipping copy step.')
+      }
     } catch (error) {
       console.error(`Error during build or copy process: ${error.message}`)
       process.exit(1)
