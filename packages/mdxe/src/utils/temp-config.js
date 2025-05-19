@@ -48,7 +48,7 @@ export async function createTempNextConfig(contentDir) {
 module.exports = {
   reactStrictMode: true,
   appDir: true,
-  // Explicitly disable pages directory
+  pagesDir: null, // Explicitly disable pages directory
   useFileSystemPublicRoutes: true,
   skipTrailingSlashRedirect: true,
   skipMiddlewareUrlNormalize: true,

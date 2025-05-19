@@ -14,6 +14,7 @@ const nextConfig = {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
   },
   appDir: true,
+  pagesDir: null, // Explicitly disable pages router
   useFileSystemPublicRoutes: true,
   skipTrailingSlashRedirect: true, 
   skipMiddlewareUrlNormalize: true,

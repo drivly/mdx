@@ -20,6 +20,8 @@ const nextConfig = {
   images: {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
   },
+  appDir: true, // Explicitly enable app router
+  pagesDir: null // Explicitly disable pages router
 }
 
 module.exports = nextConfig

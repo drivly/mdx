@@ -13,6 +13,11 @@ import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdown
 import { createTempNextConfig } from '../src/utils/temp-config.js'
 
 const copyDirRecursively = async (src, dest) => {
+  if (!existsSync(src)) {
+    console.log(`Source directory ${src} does not exist. Skipping.`)
+    return
+  }
+  
   if (!existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true })
   }
@@ -112,7 +117,9 @@ const runNextCommand = async (command, args = []) => {
         USER_CWD: userCwd,
         README_PATH: hasReadme ? readmePath : '',
         NEXT_USE_APP_DIR: '1',
-        NEXT_USE_PAGES_DIR: '0'
+        NEXT_USE_PAGES_DIR: '0',
+        NEXT_TELEMETRY_DISABLED: '1', // Disable telemetry
+        NEXT_SKIP_PAGES_DIR: '1' // Additional environment variable to skip pages directory
       }
     })
 
@@ -163,7 +170,9 @@ program
       
       if (sourceBuildDir) {
         console.log(`Copying Next.js build output from ${sourceBuildDir} to ${targetBuildDir}...`)
-        await copyDirRecursively(sourceBuildDir, targetBuildDir)
+        await copyDirRecursively(join(sourceBuildDir, 'server', 'app'), join(targetBuildDir, 'server', 'app'))
+        await copyDirRecursively(join(sourceBuildDir, 'static'), join(targetBuildDir, 'static'))
+        await copyDirRecursively(join(sourceBuildDir, 'cache'), join(targetBuildDir, 'cache'))
         console.log('Build files successfully copied to your project root.')
       } else {
         console.log('No .next directory found to copy. Skipping copy step.')
