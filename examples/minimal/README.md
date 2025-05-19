@@ -43,7 +43,7 @@ import { Button, Card } from 'mdxui'
 
 MDXE includes Tailwind CSS with the Typography plugin for beautiful typography:
 
-<div className="prose prose-lg">
+<div className='prose prose-lg'>
   This content is styled with Tailwind Typography.
 </div>
 
@@ -60,12 +60,12 @@ When deploying to Vercel, you can optionally create a `vercel.json` configuratio
 
 ```json
 {
-  "builds": [
+  'builds': [
     {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "distDir": ".next"
+      'src': 'package.json',
+      'use': '@vercel/next',
+      'config': {
+        'distDir': '.next'
       }
     }
   ]
