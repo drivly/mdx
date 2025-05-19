@@ -1,7 +1,14 @@
 import React from 'react'
-import type { ComponentType } from 'react'
+import type { ComponentType, PropsWithChildren } from 'react'
+import path from 'path'
+import { pathToFileURL } from 'url'
 
-type MDXComponents = Record<string, ComponentType<React.ComponentProps<any>>>
+// Each MDX component receives arbitrary props plus children
+type MDXComponentProps = PropsWithChildren<Record<string, unknown>>
+type MDXComponent = ComponentType<MDXComponentProps>
+type MDXComponents = Record<string, MDXComponent>
+
+type UserMDXModule = { default?: MDXComponents | ((components: MDXComponents) => MDXComponents) } & Record<string, unknown>
 
 const layouts = {
   ArticleLayout: ({ children }: { children: React.ReactNode }) => <div className="article-layout">{children}</div>,
@@ -10,18 +17,19 @@ const layouts = {
   ThingLayout: ({ children }: { children: React.ReactNode }) => <div className="thing-layout">{children}</div>,
 }
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
-  let userComponents = {}
+export async function useMDXComponents(components: MDXComponents): Promise<MDXComponents> {
+  let userComponents: MDXComponents = {}
   try {
-    const userMdxComponents = require(process.cwd() + '/mdx-components.js')
-    if (userMdxComponents.default) {
-      userComponents = userMdxComponents.default
-    } else if (typeof userMdxComponents === 'function') {
-      userComponents = userMdxComponents(components)
-    } else if (typeof userMdxComponents === 'object') {
-      userComponents = userMdxComponents
+    const file = pathToFileURL(path.join(process.cwd(), 'mdx-components.js')).href
+    const mod = (await import(file)) as UserMDXModule
+    const pkg = mod.default ?? (mod as MDXComponents | ((components: MDXComponents) => MDXComponents))
+    if (typeof pkg === 'function') {
+      userComponents = pkg(components)
+    } else if (typeof pkg === 'object') {
+      userComponents = pkg
     }
-  } catch (_) { // Underscore indicates intentionally unused parameter
+  } catch (e) {
+    console.error('Error loading MDX components:', e)
   }
 
   const defaultComponents = {
