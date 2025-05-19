@@ -76,7 +76,7 @@ export async function resolveMdxPath(slugPath) {
  * Get all markdown files in a directory recursively
  */
 export async function getAllMarkdownFiles(dir) {
-  const results[] = []
+  const results = []
   const files = await fs.readdir(dir)
   
   for (const file of files) {

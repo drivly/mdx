@@ -1,17 +1,18 @@
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import fs from 'fs/promises'
-import { resolveMdxPath } from '../utils/file-utils'
+import { resolveMdxPath } from '../../utils/file-utils'
 import { notFound } from 'next/navigation'
 
-interface PageProps {
-  params?: {
+export interface PageProps {
+  params?: Promise<{
     path?: string[]
-  }
-  searchParams?: Record<string, string | string[]>
+  }>
+  searchParams?: Promise<Record<string, string | string[]>>
 }
 
-export default async function Page({ params, searchParams }: PageProps) {
-  const slugPath = params?.path?.join('/') || ''
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params
+  const slugPath = resolvedParams?.path?.join('/') || ''
   console.log('Resolving path:', slugPath)
   
   const filePath = await resolveMdxPath(slugPath)
