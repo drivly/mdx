@@ -1,22 +1,39 @@
 import React from 'react'
 import type { ComponentType } from 'react'
 
-type MDXComponents = Record<string, ComponentType<any>>
+type MDXComponents = Record<string, ComponentType<React.ComponentProps<any>>>
+
+const layouts = {
+  ArticleLayout: ({ children }: { children: React.ReactNode }) => <div className="article-layout">{children}</div>,
+  PostLayout: ({ children }: { children: React.ReactNode }) => <div className="post-layout">{children}</div>,
+  DocsLayout: ({ children }: { children: React.ReactNode }) => <div className="docs-layout">{children}</div>,
+  ThingLayout: ({ children }: { children: React.ReactNode }) => <div className="thing-layout">{children}</div>,
+}
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
+  let userComponents = {}
+  try {
+    const userMdxComponents = require(process.cwd() + '/mdx-components.js')
+    if (userMdxComponents.default) {
+      userComponents = userMdxComponents.default
+    } else if (typeof userMdxComponents === 'function') {
+      userComponents = userMdxComponents(components)
+    } else if (typeof userMdxComponents === 'object') {
+      userComponents = userMdxComponents
+    }
+  } catch (_) { // Underscore indicates intentionally unused parameter
+  }
+
   const defaultComponents = {
     h1: ({ children }: { children: React.ReactNode }) => <h1 className="text-2xl font-bold">{children}</h1>,
     h2: ({ children }: { children: React.ReactNode }) => <h2 className="text-xl font-bold">{children}</h2>,
-    h3: ({ children }: { children: React.ReactNode }) => <h3 className="text-lg font-bold">{children}</h3>,
     p: ({ children }: { children: React.ReactNode }) => <p className="my-2">{children}</p>,
-    a: ({ children, href }: { children: React.ReactNode, href?: string }) => <a href={href} className="text-blue-500 hover:underline">{children}</a>,
-    ul: ({ children }: { children: React.ReactNode }) => <ul className="list-disc pl-5 my-2">{children}</ul>,
-    ol: ({ children }: { children: React.ReactNode }) => <ol className="list-decimal pl-5 my-2">{children}</ol>,
-    li: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
   }
 
   return {
     ...defaultComponents,
+    ...layouts,
+    ...userComponents,
     ...components,
   }
 }
