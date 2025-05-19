@@ -199,7 +199,7 @@ program
   .description('Build the application for production')
   .action(async () => {
     try {
-      await runNextCommand('build')
+    await runNextCommand('build', ['--no-pages'])
       
       const userCwd = process.cwd()
       const mdxeRoot = resolve(__dirname, '..')
