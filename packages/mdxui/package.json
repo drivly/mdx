@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "type": "module",
   "exports": {
-    "./*": "./src/*.tsx"
+    "./*": "./src/*.tsx",
+    "./layouts/*": "./src/layouts/*.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
