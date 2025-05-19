@@ -108,6 +108,12 @@ const runNextCommand = async (command, args = []) => {
   const embeddedAppPath = resolve(mdxeRoot, 'src')
 
   try {
+    const tempNextDir = resolve(embeddedAppPath, '.next')
+    if (existsSync(tempNextDir)) {
+      console.log(`Cleaning up temporary Next.js build directory before command: ${tempNextDir}`)
+      cleanupPagesRouterArtifacts(tempNextDir)
+    }
+    
     const readmePath = resolve(userCwd, 'README.md')
     const hasReadme = existsSync(readmePath)
     
@@ -139,6 +145,17 @@ const runNextCommand = async (command, args = []) => {
       nextDistDir = resolve(userCwd, '.next')
     }
     
+    const customConfigPath = resolve(embeddedAppPath, 'next.config.custom.js')
+    fs.writeFileSync(customConfigPath, `
+      module.exports = {
+        ...require('./next.config.js'),
+        experimental: {
+          appDir: true,
+          pagesDir: false,
+        },
+      }
+    `)
+    
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
@@ -152,7 +169,8 @@ const runNextCommand = async (command, args = []) => {
         NEXT_USE_APP_DIR: '1',
         NEXT_USE_PAGES_DIR: '0',
         NEXT_TELEMETRY_DISABLED: '1', // Disable telemetry
-        NEXT_SKIP_PAGES_DIR: '1' // Additional environment variable to skip pages directory
+        NEXT_SKIP_PAGES_DIR: '1', // Additional environment variable to skip pages directory
+        NEXT_CONFIG_FILE: customConfigPath, // Use our custom config file
       }
     })
 
