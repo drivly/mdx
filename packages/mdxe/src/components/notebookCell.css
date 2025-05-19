@@ -1,0 +1,3 @@
+.notebook-cell .monaco-editor {
+  border-bottom: 1px solid #e5e7eb; /* tailwind gray-200 */
+}
