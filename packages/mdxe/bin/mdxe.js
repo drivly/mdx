@@ -38,6 +38,39 @@ const copyDirRecursively = async (src, dest) => {
   console.log(`Copied directory: ${src} → ${dest}`)
 }
 
+const cleanupPagesRouterArtifacts = (buildDir) => {
+  if (!existsSync(buildDir)) {
+    console.log(`Build directory ${buildDir} does not exist. Skipping cleanup.`)
+    return
+  }
+  
+  const pagesDir = join(buildDir, 'server', 'pages')
+  if (existsSync(pagesDir)) {
+    console.log(`Cleaning up pages router artifacts from ${pagesDir}`)
+    fs.rmSync(pagesDir, { recursive: true, force: true })
+  }
+  
+  const serverDir = join(buildDir, 'server')
+  if (existsSync(serverDir)) {
+    const findAndRemoveDocumentFiles = (dir) => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true })
+      
+      for (const entry of entries) {
+        const entryPath = join(dir, entry.name)
+        
+        if (entry.isDirectory() && entry.name !== 'pages') {
+          findAndRemoveDocumentFiles(entryPath)
+        } else if (entry.name === '_document.js') {
+          console.log(`Removing problematic _document.js file: ${entryPath}`)
+          fs.rmSync(entryPath, { force: true })
+        }
+      }
+    }
+    
+    findAndRemoveDocumentFiles(serverDir)
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -169,10 +202,21 @@ program
       }
       
       if (sourceBuildDir) {
+        console.log('Cleaning up any pages router artifacts before copying...')
+        cleanupPagesRouterArtifacts(sourceBuildDir)
+        
         console.log(`Copying Next.js build output from ${sourceBuildDir} to ${targetBuildDir}...`)
+        const targetServerDir = join(targetBuildDir, 'server')
+        if (!existsSync(targetServerDir)) {
+          fs.mkdirSync(targetServerDir, { recursive: true })
+        }
+        
         await copyDirRecursively(join(sourceBuildDir, 'server', 'app'), join(targetBuildDir, 'server', 'app'))
         await copyDirRecursively(join(sourceBuildDir, 'static'), join(targetBuildDir, 'static'))
         await copyDirRecursively(join(sourceBuildDir, 'cache'), join(targetBuildDir, 'cache'))
+        
+        cleanupPagesRouterArtifacts(targetBuildDir)
+        
         console.log('Build files successfully copied to your project root.')
       } else {
         console.log('No .next directory found to copy. Skipping copy step.')
