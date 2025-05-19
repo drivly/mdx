@@ -13,6 +13,11 @@ const nextConfig = {
   images: {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
   },
+  appDir: true,
+  useFileSystemPublicRoutes: true,
+  skipTrailingSlashRedirect: true, 
+  skipMiddlewareUrlNormalize: true,
+  pageExtensions: ['tsx', 'jsx', 'js', 'ts'],
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(md|mdx)$/,

@@ -110,7 +110,9 @@ const runNextCommand = async (command, args = []) => {
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
         NEXT_DIST_DIR: nextDistDir,
         USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
+        README_PATH: hasReadme ? readmePath : '',
+        NEXT_USE_APP_DIR: '1',
+        NEXT_USE_PAGES_DIR: '0'
       }
     })
 
