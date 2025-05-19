@@ -4,72 +4,12 @@
 
 import { Command } from 'commander'
 import { existsSync } from 'fs'
-import fs from 'fs'
 import { join, resolve } from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
 import { createTempNextConfig } from '../src/utils/temp-config.js'
-
-const copyDirRecursively = async (src, dest) => {
-  if (!existsSync(src)) {
-    console.log(`Source directory ${src} does not exist. Skipping.`)
-    return
-  }
-  
-  if (!existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true })
-  }
-  
-  const entries = fs.readdirSync(src, { withFileTypes: true })
-  
-  for (const entry of entries) {
-    const srcPath = join(src, entry.name)
-    const destPath = join(dest, entry.name)
-    
-    if (entry.isDirectory()) {
-      await copyDirRecursively(srcPath, destPath)
-    } else {
-      fs.copyFileSync(srcPath, destPath)
-    }
-  }
-  
-  console.log(`Copied directory: ${src} → ${dest}`)
-}
-
-const cleanupPagesRouterArtifacts = (buildDir) => {
-  if (!existsSync(buildDir)) {
-    console.log(`Build directory ${buildDir} does not exist. Skipping cleanup.`)
-    return
-  }
-  
-  const pagesDir = join(buildDir, 'server', 'pages')
-  if (existsSync(pagesDir)) {
-    console.log(`Cleaning up pages router artifacts from ${pagesDir}`)
-    fs.rmSync(pagesDir, { recursive: true, force: true })
-  }
-  
-  const serverDir = join(buildDir, 'server')
-  if (existsSync(serverDir)) {
-    const findAndRemoveDocumentFiles = (dir) => {
-      const entries = fs.readdirSync(dir, { withFileTypes: true })
-      
-      for (const entry of entries) {
-        const entryPath = join(dir, entry.name)
-        
-        if (entry.isDirectory() && entry.name !== 'pages') {
-          findAndRemoveDocumentFiles(entryPath)
-        } else if (entry.name === '_document.js') {
-          console.log(`Removing problematic _document.js file: ${entryPath}`)
-          fs.rmSync(entryPath, { force: true })
-        }
-      }
-    }
-    
-    findAndRemoveDocumentFiles(serverDir)
-  }
-}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -108,74 +48,6 @@ const runNextCommand = async (command, args = []) => {
   const embeddedAppPath = resolve(mdxeRoot, 'src')
 
   try {
-    if (command === 'build') {
-      console.log('Using enhanced build process to avoid pages router issues...')
-      
-      const nextDir = resolve(userCwd, '.next')
-      
-      // Create server directory with app router structure
-      const serverDir = resolve(nextDir, 'server')
-      fs.mkdirSync(serverDir, { recursive: true })
-      
-      const appDir = resolve(serverDir, 'app')
-      fs.mkdirSync(appDir, { recursive: true })
-      
-      // Create required subdirectories
-      fs.mkdirSync(resolve(appDir, 'chunks'), { recursive: true })
-      fs.mkdirSync(resolve(appDir, 'pages'), { recursive: true })
-      
-      // Create static directory with required subdirectories
-      const staticDir = resolve(nextDir, 'static')
-      fs.mkdirSync(staticDir, { recursive: true })
-      fs.mkdirSync(resolve(staticDir, 'chunks'), { recursive: true })
-      fs.mkdirSync(resolve(staticDir, 'media'), { recursive: true })
-      fs.mkdirSync(resolve(staticDir, 'css'), { recursive: true })
-      
-      // Create cache directory
-      const cacheDir = resolve(nextDir, 'cache')
-      fs.mkdirSync(cacheDir, { recursive: true })
-      
-      // Create required manifest files
-      fs.writeFileSync(resolve(nextDir, 'build-manifest.json'), JSON.stringify({
-        pages: {
-          "/_app": [],
-          "/": []
-        },
-        devFiles: [],
-        ampDevFiles: [],
-        polyfillFiles: [],
-        lowPriorityFiles: [],
-        rootMainFiles: [],
-        ampFirstPages: []
-      }, null, 2))
-      
-      // Create required config files
-      fs.writeFileSync(resolve(nextDir, 'routes-manifest.json'), JSON.stringify({
-        version: 3,
-        pages404: false,
-        basePath: "",
-        redirects: [],
-        headers: [],
-        dynamicRoutes: [],
-        staticRoutes: [],
-        dataRoutes: [],
-        rsc: {
-          header: "RSC",
-          varyHeader: "RSC, Next-Router-State-Tree, Next-Router-Prefetch"
-        }
-      }, null, 2))
-      
-      console.log('Created enhanced build output structure in user project to satisfy turbo build.')
-      console.log('Build completed successfully.')
-      return
-    }
-    
-    const tempNextDir = resolve(embeddedAppPath, '.next')
-    if (existsSync(tempNextDir)) {
-      console.log(`Cleaning up temporary Next.js build directory before command: ${tempNextDir}`)
-      cleanupPagesRouterArtifacts(tempNextDir)
-    }
-    
     const readmePath = resolve(userCwd, 'README.md')
     const hasReadme = existsSync(readmePath)
     
@@ -207,14 +79,6 @@ const runNextCommand = async (command, args = []) => {
       nextDistDir = resolve(userCwd, '.next')
     }
     
-    const customConfigPath = resolve(embeddedAppPath, 'next.config.custom.js')
-    fs.writeFileSync(customConfigPath, `
-      module.exports = {
-        reactStrictMode: true,
-        distDir: '${nextDistDir}'
-      }
-    `)
-    
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
@@ -224,13 +88,7 @@ const runNextCommand = async (command, args = []) => {
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
         NEXT_DIST_DIR: nextDistDir,
         USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : '',
-        NEXT_USE_APP_DIR: '1',
-        NEXT_USE_PAGES_DIR: '0',
-        NEXT_TELEMETRY_DISABLED: '1', // Disable telemetry
-        NEXT_SKIP_PAGES_DIR: '1', // Additional environment variable to skip pages directory
-        NEXT_CONFIG_FILE: customConfigPath, // Use our custom config file
-        NODE_ENV: 'production' // Force production mode
+        README_PATH: hasReadme ? readmePath : ''
       }
     })
 
@@ -261,15 +119,7 @@ program
   .command('build')
   .description('Build the application for production')
   .action(async () => {
-    try {
-      await runNextCommand('build')
-      
-      console.log('Skipping all copy steps to avoid pages router artifacts.')
-      console.log('Build completed successfully.')
-    } catch (error) {
-      console.error(`Error during build process: ${error.message}`)
-      process.exit(1)
-    }
+    await runNextCommand('build')
   })
 
 program
