@@ -41,26 +41,6 @@ export async function createTempNextConfig(contentDir) {
     await fs.copyFile(src, dest)
   }
   
-  // Create next.config.js with simplified configuration
-  await fs.writeFile(
-    join(tempDir, 'next.config.js'),
-    `/** @type {import('next').NextConfig} */
-module.exports = {
-  reactStrictMode: true,
-  useFileSystemPublicRoutes: true,
-  skipTrailingSlashRedirect: true,
-  skipMiddlewareUrlNormalize: true,
-  pageExtensions: ['tsx', 'jsx', 'js', 'ts'],
-  distDir: '.next',
-  output: process.env.NEXT_OUTPUT || 'standalone',
-  basePath: process.env.NEXT_BASE_PATH || '',
-  images: {
-    domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
-  },
-}
-`
-  )
-  
   await fs.writeFile(
     join(appDir, 'layout.tsx'),
     `
