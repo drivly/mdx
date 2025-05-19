@@ -217,22 +217,36 @@ program
       }
       
       if (sourceBuildDir) {
-        console.log('Cleaning up any pages router artifacts before copying...')
-        cleanupPagesRouterArtifacts(sourceBuildDir)
-        
-        console.log(`Copying Next.js build output from ${sourceBuildDir} to ${targetBuildDir}...`)
-        const targetServerDir = join(targetBuildDir, 'server')
-        if (!existsSync(targetServerDir)) {
-          fs.mkdirSync(targetServerDir, { recursive: true })
+        if (existsSync(targetBuildDir)) {
+          console.log(`Removing existing build directory: ${targetBuildDir}`)
+          fs.rmSync(targetBuildDir, { recursive: true, force: true })
         }
         
-        await copyDirRecursively(join(sourceBuildDir, 'server', 'app'), join(targetBuildDir, 'server', 'app'))
-        await copyDirRecursively(join(sourceBuildDir, 'static'), join(targetBuildDir, 'static'))
-        await copyDirRecursively(join(sourceBuildDir, 'cache'), join(targetBuildDir, 'cache'))
+        console.log(`Creating new build directory: ${targetBuildDir}`)
+        fs.mkdirSync(targetBuildDir, { recursive: true })
         
-        cleanupPagesRouterArtifacts(targetBuildDir)
+        const targetServerDir = join(targetBuildDir, 'server')
+        fs.mkdirSync(targetServerDir, { recursive: true })
         
-        console.log('Build files successfully copied to your project root.')
+        const sourceAppDir = join(sourceBuildDir, 'server', 'app')
+        if (existsSync(sourceAppDir)) {
+          console.log(`Copying app router files from ${sourceAppDir} to ${join(targetServerDir, 'app')}`)
+          await copyDirRecursively(sourceAppDir, join(targetServerDir, 'app'))
+        }
+        
+        const sourceStaticDir = join(sourceBuildDir, 'static')
+        if (existsSync(sourceStaticDir)) {
+          console.log(`Copying static assets from ${sourceStaticDir} to ${join(targetBuildDir, 'static')}`)
+          await copyDirRecursively(sourceStaticDir, join(targetBuildDir, 'static'))
+        }
+        
+        const sourceCacheDir = join(sourceBuildDir, 'cache')
+        if (existsSync(sourceCacheDir)) {
+          console.log(`Copying cache from ${sourceCacheDir} to ${join(targetBuildDir, 'cache')}`)
+          await copyDirRecursively(sourceCacheDir, join(targetBuildDir, 'cache'))
+        }
+        
+        console.log('Build files successfully copied to your project root without pages router artifacts.')
       } else {
         console.log('No .next directory found to copy. Skipping copy step.')
       }
