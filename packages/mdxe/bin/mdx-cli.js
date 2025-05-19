@@ -31,8 +31,17 @@ function runNextCommand(command, options = {}) {
   const mdxRoot = join(__dirname, '..')
   const embeddedAppPath = join(mdxRoot, 'src')
   
-  const nextBin = join(process.cwd(), 'node_modules', '.bin', 'next')
-  const nextBinExists = fs.existsSync(nextBin)
+  const localNextBin = join(userCwd, 'node_modules', '.bin', 'next')
+  const mdxeNextBin = join(mdxRoot, 'node_modules', '.bin', 'next')
+  
+  let nextCommand
+  if (fs.existsSync(localNextBin)) {
+    nextCommand = localNextBin
+  } else if (fs.existsSync(mdxeNextBin)) {
+    nextCommand = mdxeNextBin
+  } else {
+    nextCommand = 'npx next'
+  }
   
   const args = [command]
   
@@ -44,9 +53,12 @@ function runNextCommand(command, options = {}) {
     args.push('-H', options.hostname)
   }
   
-  const nextCommand = nextBinExists ? nextBin : 'next'
-  
   console.log(`Running: ${nextCommand} ${args.join(' ')}`)
+  console.log(`User current directory: ${userCwd}`)
+  console.log(`App directory: ${embeddedAppPath}`)
+  
+  const readmePath = join(userCwd, 'README.md')
+  const hasReadme = fs.existsSync(readmePath)
   
   activeProcess = spawn(nextCommand, args, {
     stdio: 'inherit',
@@ -54,7 +66,10 @@ function runNextCommand(command, options = {}) {
     cwd: embeddedAppPath,
     env: {
       ...process.env,
-      USER_CWD: userCwd
+      NEXT_PUBLIC_USER_CWD: userCwd,
+      USER_CWD: userCwd,
+      APP_ROOT_PATH: embeddedAppPath,
+      README_PATH: hasReadme ? readmePath : ''
     }
   })
   
