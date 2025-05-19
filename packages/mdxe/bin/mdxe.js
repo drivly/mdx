@@ -149,10 +149,7 @@ const runNextCommand = async (command, args = []) => {
     fs.writeFileSync(customConfigPath, `
       module.exports = {
         ...require('./next.config.js'),
-        experimental: {
-          appDir: true,
-          pagesDir: false,
-        },
+        experimental: {}
       }
     `)
     

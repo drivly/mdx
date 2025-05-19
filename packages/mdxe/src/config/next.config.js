@@ -19,9 +19,7 @@ const nextConfig = {
   basePath: process.env.NEXT_BASE_PATH || '',
   images: {
     domains: (process.env.NEXT_IMAGE_DOMAINS || '').split(',').filter(Boolean),
-  },
-  appDir: true, // Explicitly enable app router
-  pagesDir: null // Explicitly disable pages router
+  }
 }
 
 module.exports = nextConfig

@@ -41,14 +41,12 @@ export async function createTempNextConfig(contentDir) {
     await fs.copyFile(src, dest)
   }
   
-  // Create next.config.js with explicit app router configuration
+  // Create next.config.js with simplified configuration
   await fs.writeFile(
     join(tempDir, 'next.config.js'),
     `/** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
-  appDir: true,
-  pagesDir: null, // Explicitly disable pages directory
   useFileSystemPublicRoutes: true,
   skipTrailingSlashRedirect: true,
   skipMiddlewareUrlNormalize: true,
