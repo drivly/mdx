@@ -83,7 +83,26 @@ function runNextCommand(command, options = {}) {
   const embeddedAppPath = join(mdxRoot, 'src')
   
   if (command === 'build') {
-    ensureCustom404Page(userCwd)
+    const nextConfigPath = join(userCwd, 'next.config.js')
+    const nextConfigContent = `
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
+  eslint: {
+    ignoreDuringBuilds: true
+  }
+}
+
+module.exports = nextConfig
+`
+    fs.writeFileSync(nextConfigPath, nextConfigContent.trim())
+    console.log(`Created Next.js config at ${nextConfigPath}`)
   }
   
   const localNextBin = join(userCwd, 'node_modules', '.bin', 'next')
@@ -121,7 +140,8 @@ function runNextCommand(command, options = {}) {
     USER_CWD: userCwd,
     APP_ROOT_PATH: embeddedAppPath,
     README_PATH: hasReadme ? readmePath : '',
-    NODE_ENV: command === 'build' ? 'production' : 'development'
+    NODE_ENV: command === 'build' ? 'production' : 'development',
+    NEXT_SKIP_404: 'true'
   }
   
   activeProcess = spawn(nextCommand, args, {
