@@ -1,163 +1,131 @@
 #!/usr/bin/env node
 
-/* global process */
+import { Command } from 'commander';
+import { spawn } from 'child_process';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { existsSync } from 'fs';
 
-import { Command } from 'commander'
-import { existsSync } from 'fs'
-import { join, resolve } from 'path'
-import { spawn } from 'child_process'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
-import { createTempNextConfig } from '../src/utils/temp-config.js'
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const packageJsonPath = join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+const version = packageJson.version;
 
-const packageJsonPath = join(__dirname, '..', 'package.json')
-const packageJson = JSON.parse(await import('fs').then((fs) => fs.readFileSync(packageJsonPath, 'utf8')))
-const version = packageJson.version
+const program = new Command();
+program
+  .name('mdx')
+  .description('Simple MDX file server with Next.js')
+  .version(version);
 
-const program = new Command()
-
-program.name('mdxe').description('Zero-config CLI for serving Markdown and MDX files').version(version)
-
-const findConfigFile = (dir, filename) => {
-  const configPath = join(dir, filename)
-  return existsSync(configPath) ? configPath : null
-}
-
-let activeProcess = null
-let tempConfigInfo = null
-
-process.on('SIGINT', async () => {
+let activeProcess = null;
+process.on('SIGINT', () => {
   if (activeProcess) {
-    activeProcess.kill('SIGINT')
+    activeProcess.kill('SIGINT');
+  }
+  process.exit(0);
+});
+
+function runNextCommand(command, options = {}) {
+  const cwd = process.cwd();
+  const nextBin = join(cwd, 'node_modules', '.bin', 'next');
+  const nextBinExists = existsSync(nextBin);
+  
+  const args = [command];
+  
+  if (options.port) {
+    args.push('-p', options.port);
   }
   
-  if (tempConfigInfo) {
-    await tempConfigInfo.cleanup()
+  if (options.hostname) {
+    args.push('-H', options.hostname);
   }
   
-  process.exit(0)
-})
-
-const runNextCommand = async (command, args = []) => {
-  const userCwd = process.cwd()
-  const mdxeRoot = resolve(__dirname, '..')
-  const embeddedAppPath = resolve(mdxeRoot, 'src')
-
-  try {
-    const readmePath = resolve(userCwd, 'README.md')
-    const hasReadme = existsSync(readmePath)
-    
-    const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
-    const mdxeNextBin = resolve(mdxeRoot, 'node_modules', '.bin', 'next')
-
-    let cmd, cmdArgs
-
-    if (existsSync(localNextBin)) {
-      cmd = localNextBin
-      cmdArgs = [command, ...args]
-    } else if (existsSync(mdxeNextBin)) {
-      cmd = mdxeNextBin
-      cmdArgs = [command, ...args]
-    } else {
-      cmd = 'npx'
-      cmdArgs = ['next', command, ...args]
-    }
-
-    console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
-    
-    const isVercelDeployment = process.env.VERCEL === '1'
-    
-    let nextDistDir = resolve(userCwd, '.next')
-    
-    if (isVercelDeployment) {
-      console.log('Vercel deployment detected. Ensuring .next directory is in project root.')
-      // Always use userCwd (the actual project root) instead of process.cwd() 
-      nextDistDir = resolve(userCwd, '.next')
-    }
-    
-    activeProcess = spawn(cmd, cmdArgs, {
-      stdio: 'inherit',
-      shell: true,
-      cwd: embeddedAppPath,
-      env: {
-        ...process.env,
-        PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
-        NEXT_DIST_DIR: nextDistDir,
-        USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
-      }
-    })
-
-    activeProcess.on('error', (error) => {
-      console.error(`Error executing command: ${error.message}`)
-      process.exit(1)
-    })
-
+  const nextCommand = nextBinExists ? nextBin : 'next';
+  
+  console.log(`Running: ${nextCommand} ${args.join(' ')}`);
+  
+  const env = {
+    ...process.env,
+    USER_CWD: cwd
+  };
+  
+  activeProcess = spawn(nextCommand, args, {
+    stdio: 'inherit',
+    shell: true,
+    env,
+    cwd: join(__dirname, '..') // Run from the package root
+  });
+  
+  return new Promise((resolve, reject) => {
     activeProcess.on('close', (code) => {
-      process.exit(code)
-    })
-  } catch (error) {
-    console.error(`Error: ${error.message}`)
-    process.exit(1)
-  }
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Next.js process exited with code ${code}`));
+      }
+    });
+  });
 }
 
 program
   .command('dev')
-  .description('Start the development server')
-  .option('-p, --port <port>', 'Port to run the server on', '3000')
-  .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
+  .description('Start development server')
+  .option('-p, --port <port>', 'Port to run on', '3000')
+  .option('-H, --hostname <hostname>', 'Hostname to run on', 'localhost')
   .action(async (options) => {
-    await runNextCommand('dev', [`--port=${options.port}`, `--hostname=${options.hostname}`])
-  })
+    await runNextCommand('dev', options);
+  });
 
 program
   .command('build')
-  .description('Build the application for production')
+  .description('Build for production')
   .action(async () => {
-    await runNextCommand('build')
-  })
+    await runNextCommand('build');
+  });
 
 program
   .command('start')
-  .description('Start the production server')
-  .option('-p, --port <port>', 'Port to run the server on', '3000')
-  .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
+  .description('Start production server')
+  .option('-p, --port <port>', 'Port to run on', '3000')
+  .option('-H, --hostname <hostname>', 'Hostname to run on', 'localhost')
   .action(async (options) => {
-    await runNextCommand('start', [`--port=${options.port}`, `--hostname=${options.hostname}`])
-  })
+    await runNextCommand('start', options);
+  });
 
 program
-  .command('lint')
-  .description('Run linting on the application')
+  .command('test')
+  .description('Run tests')
   .action(async () => {
-    await runNextCommand('lint')
-  })
-
-if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].includes(arg))) {
-  program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
-    const resolvedPath = resolvePath(path)
+    const cwd = process.cwd();
+    const vitestBin = join(cwd, 'node_modules', '.bin', 'vitest');
     
-    if (!resolvedPath && path !== '.') {
-      console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
-      console.error('Make sure the path exists and is either:')
-      console.error('  - A .md or .mdx file')
-      console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
-      process.exit(1)
-    }
-    
-    if (resolvedPath) {
-      console.log(`Serving markdown file: ${resolvedPath}`)
+    if (existsSync(vitestBin)) {
+      console.log('Running tests with Vitest...');
+      const testProcess = spawn(vitestBin, ['run', '--passWithNoTests'], {
+        stdio: 'inherit',
+        shell: true,
+        cwd
+      });
+      
+      testProcess.on('close', (code) => {
+        process.exit(0);
+      });
     } else {
-      console.log('Starting MDX app with embedded CMS')
+      console.log('Vitest not found. Skipping tests.');
+      process.exit(0);
     }
-    
-    await runNextCommand('dev')
-  })
+  });
+
+if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'test'].includes(arg))) {
+  program
+    .argument('[path]', 'Path to a markdown file or directory', '.')
+    .action(async (path) => {
+      console.log(`Serving markdown content from: ${path || '.'}`);
+      await runNextCommand('dev');
+    });
 }
 
-program.parse(process.argv)
+program.parse(process.argv);
