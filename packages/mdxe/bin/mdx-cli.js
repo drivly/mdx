@@ -103,6 +103,53 @@ module.exports = nextConfig
 `
     fs.writeFileSync(nextConfigPath, nextConfigContent.trim())
     console.log(`Created Next.js config at ${nextConfigPath}`)
+    
+    const pagesDir = join(userCwd, 'pages')
+    if (!fs.existsSync(pagesDir)) {
+      fs.mkdirSync(pagesDir, { recursive: true })
+    }
+    
+    const custom404Path = join(pagesDir, '404.js')
+    if (!fs.existsSync(custom404Path)) {
+      const simple404Content = `
+export default function Custom404() {
+  return (
+    <div style={{ textAlign: 'center', padding: '50px' }}>
+      <h1>404 - Page Not Found</h1>
+      <p>The page you are looking for does not exist.</p>
+      <a href="/">Return to Home</a>
+    </div>
+  )
+}
+`
+      fs.writeFileSync(custom404Path, simple404Content.trim())
+      console.log(`Created custom 404 page at ${custom404Path}`)
+    }
+    
+    const documentPath = join(pagesDir, '_document.js')
+    if (!fs.existsSync(documentPath)) {
+      const documentContent = `
+import Document, { Html, Head, Main, NextScript } from 'next/document'
+
+class MyDocument extends Document {
+  render() {
+    return (
+      <Html lang="en">
+        <Head />
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    )
+  }
+}
+
+export default MyDocument
+`
+      fs.writeFileSync(documentPath, documentContent.trim())
+      console.log(`Created custom _document page at ${documentPath}`)
+    }
   }
   
   const localNextBin = join(userCwd, 'node_modules', '.bin', 'next')
