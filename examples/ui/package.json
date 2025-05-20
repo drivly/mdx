@@ -1,0 +1,8 @@
+{
+  "name": "mdxui-demo",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "mdxui": "workspace:*"
+  }
+}
