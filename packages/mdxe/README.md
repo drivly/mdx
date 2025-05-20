@@ -53,6 +53,22 @@ mdxe start
 mdxe lint
 ```
 
+### Notebook Command
+
+Open an individual notebook in the embedded app. Use `--save` to upload the file
+to Payload CMS or `--load` to download it before starting.
+
+```bash
+# View a notebook
+mdxe notebook notes/example.mdx
+
+# Load the notebook from Payload CMS then open it
+mdxe notebook notes/example.mdx --load
+
+# Save local changes back to Payload CMS
+mdxe notebook notes/example.mdx --save
+```
+
 ## Configuration
 
 MDXE works with zero configuration, but you can customize it by creating the following files:

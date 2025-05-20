@@ -4,10 +4,11 @@
 
 import { Command } from 'commander'
 import { existsSync } from 'fs'
-import { join, resolve } from 'path'
+import path, { join, resolve } from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import fs from 'fs/promises'
 import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
 import { createTempNextConfig } from '../src/utils/temp-config.js'
 
@@ -42,7 +43,7 @@ process.on('SIGINT', async () => {
   process.exit(0)
 })
 
-const runNextCommand = async (command, args = []) => {
+const runNextCommand = async (command, args = [], extraEnv = {}) => {
   const userCwd = process.cwd()
   const mdxeRoot = resolve(__dirname, '..')
   const embeddedAppPath = resolve(mdxeRoot, 'src')
@@ -88,7 +89,8 @@ const runNextCommand = async (command, args = []) => {
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
         NEXT_DIST_DIR: nextDistDir,
         USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
+        README_PATH: hasReadme ? readmePath : '',
+        ...extraEnv
       }
     })
 
@@ -104,6 +106,74 @@ const runNextCommand = async (command, args = []) => {
     console.error(`Error: ${error.message}`)
     process.exit(1)
   }
+}
+
+const mdxdbConfig = resolve(__dirname, '..', '..', 'mdxdb', 'src', 'payload.config.ts')
+let payloadClient = null
+
+const getPayloadClient = async () => {
+  if (payloadClient) return payloadClient
+  const payload = await import('payload')
+  if (!payload.default.collections) {
+    payloadClient = await payload.default.init({
+      secret: process.env.PAYLOAD_SECRET || 'secret',
+      local: true,
+      config: mdxdbConfig
+    })
+  } else {
+    payloadClient = payload.default
+  }
+  return payloadClient
+}
+
+const saveNotebook = async (filePath) => {
+  const payload = await getPayloadClient()
+  const content = await fs.readFile(filePath, 'utf8')
+  const relative = path.relative(process.cwd(), filePath)
+  const parts = relative.split(path.sep)
+  const folder = parts.length > 1 ? parts[0] : 'root'
+  const id = path.basename(filePath, path.extname(filePath))
+
+  let folderId
+  const folderRes = await payload.find({ collection: 'folders', where: { id: { equals: folder } } })
+  if (folderRes.docs.length > 0) {
+    folderId = folderRes.docs[0].id
+  } else {
+    const newFolder = await payload.create({ collection: 'folders', data: { id: folder } })
+    folderId = newFolder.id
+  }
+
+  const docRes = await payload.find({ collection: 'mdx', where: { id: { equals: id }, folder: { equals: folderId } } })
+  if (docRes.docs.length > 0) {
+    await payload.update({ collection: 'mdx', id: docRes.docs[0].id, data: { content } })
+    console.log('Notebook updated in Payload CMS')
+  } else {
+    await payload.create({ collection: 'mdx', data: { folder: folderId, id, content } })
+    console.log('Notebook saved to Payload CMS')
+  }
+}
+
+const loadNotebook = async (filePath) => {
+  const payload = await getPayloadClient()
+  const relative = path.relative(process.cwd(), filePath)
+  const parts = relative.split(path.sep)
+  const folder = parts.length > 1 ? parts[0] : 'root'
+  const id = path.basename(filePath, path.extname(filePath))
+
+  const folderRes = await payload.find({ collection: 'folders', where: { id: { equals: folder } } })
+  if (!folderRes.docs[0]) {
+    console.error('Folder not found in Payload CMS')
+    return
+  }
+  const folderId = folderRes.docs[0].id
+
+  const docRes = await payload.find({ collection: 'mdx', where: { id: { equals: id }, folder: { equals: folderId } } })
+  if (!docRes.docs[0]) {
+    console.error('Notebook not found in Payload CMS')
+    return
+  }
+  await fs.writeFile(filePath, docRes.docs[0].content)
+  console.log('Notebook loaded from Payload CMS')
 }
 
 program
@@ -138,7 +208,30 @@ program
     await runNextCommand('lint')
   })
 
-if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].includes(arg))) {
+program
+  .command('notebook <file>')
+  .description('Launch interactive notebook viewer')
+  .option('--save', 'Save notebook to Payload CMS')
+  .option('--load', 'Load notebook from Payload CMS')
+  .action(async (file, options) => {
+    const notebookPath = resolve(file)
+    if (!existsSync(notebookPath)) {
+      console.error(`Notebook file not found: ${notebookPath}`)
+      process.exit(1)
+    }
+
+    if (options.load) {
+      await loadNotebook(notebookPath)
+    }
+
+    if (options.save) {
+      await saveNotebook(notebookPath)
+    }
+
+    await runNextCommand('dev', [], { NOTEBOOK_PATH: notebookPath })
+  })
+
+if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint', 'notebook'].includes(arg))) {
   program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
     const resolvedPath = resolvePath(path)
     

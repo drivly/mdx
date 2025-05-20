@@ -3,6 +3,19 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import fs from 'fs/promises'
 
 export default async function Page() {
+  if (process.env.NOTEBOOK_PATH) {
+    try {
+      const content = await fs.readFile(process.env.NOTEBOOK_PATH, 'utf-8')
+      return (
+        <article className="prose prose-slate max-w-none p-4">
+          <MDXRemote source={content} />
+        </article>
+      )
+    } catch (e) {
+      console.error('Error reading notebook:', e)
+    }
+  }
+
   if (process.env.README_PATH) {
     try {
       const content = await fs.readFile(process.env.README_PATH, 'utf-8')
