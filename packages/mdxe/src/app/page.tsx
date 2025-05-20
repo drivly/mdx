@@ -1,6 +1,7 @@
 import React from 'react'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import fs from 'fs/promises'
+import { useMDXComponents } from './mdx-components'
 
 export default async function Page() {
   if (process.env.README_PATH) {
@@ -8,7 +9,7 @@ export default async function Page() {
       const content = await fs.readFile(process.env.README_PATH, 'utf-8')
       return (
         <article className="prose prose-slate max-w-none p-4">
-          <MDXRemote source={content} />
+          <MDXRemote source={content} components={useMDXComponents({})} />
         </article>
       )
     } catch (e) {

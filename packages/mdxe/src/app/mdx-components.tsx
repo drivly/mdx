@@ -1,5 +1,7 @@
 import React from 'react'
 import type { ComponentType } from 'react'
+import NotebookCell from './components/NotebookCell'
+import { parseMeta } from './components/parseMeta'
 
 type MDXComponents = Record<string, ComponentType<React.ComponentProps<any>>>
 
@@ -30,9 +32,18 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     p: ({ children }: { children: React.ReactNode }) => <p className="my-2">{children}</p>,
   }
 
+  const NotebookPre = ({ children }: { children: React.ReactElement }) => {
+    if (!React.isValidElement(children)) return <pre>{children}</pre>
+    const { className = '', children: code, ['data-meta']: meta } = children.props as any
+    const language = className.replace('language-', '')
+    const metaObj = parseMeta(meta)
+    return <NotebookCell code={(code as string).trim()} language={language} meta={metaObj} />
+  }
+
   return {
     ...defaultComponents,
     ...layouts,
+    pre: NotebookPre,
     ...userComponents,
     ...components,
   }

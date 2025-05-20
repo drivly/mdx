@@ -1,6 +1,7 @@
 import React from 'react'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import fs from 'fs/promises'
+import { useMDXComponents } from '../mdx-components'
 import path from 'path'
 import { resolvePath, isMarkdownFile, getAllMarkdownFiles } from '../../utils/file-resolution'
 
@@ -73,7 +74,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
   
   return (
     <article className="prose prose-slate max-w-7xl mx-auto p-4">
-      <MDXRemote source={content} />
+      <MDXRemote source={content} components={useMDXComponents({})} />
     </article>
   )
 }
