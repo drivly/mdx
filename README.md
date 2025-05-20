@@ -1,5 +1,3 @@
-# MDX.org.ai
-
 ## [`mdxai`](./packages/mdxai) - Generate & Edit Markdown & MDX
 
 ```bash
@@ -24,7 +22,108 @@ for (const title of titles) {
 
 ## [`mdxld`](./packages/mdxld) - Linked Data for Markdown & MDX
 
+MDXLD builds upon the foundations of Linked Data like (JSON-LD and YAML-LD) with ontologies like [schema.org](https://schema.org), to create a powerful integration between structured data and content.
+
+```mdx
+---
+$id: https://example.com
+$type: https://schema.org/WebSite
+title: Example Domain
+description: This domain is for use in illustrative examples in documents
+---
+ 
+# Example Domain
+ 
+This domain is for use in illustrative examples in documents. You may use this
+domain in literature without prior coordination or asking for permission.
+ 
+[More information...](https://www.iana.org/domains/example)
+```
+
 ## [`mdxe`](./packages/mdxe) - Build, Execute, Test, & Deploy Code in Markdown & MDX
+
+MDXE is a zero-config CLI that allows you to build, execute, test, and deploy code in Markdown & MDX files. It uses MDX, ESBuild, ESLint, Next.js, React, Velite, and Vitest under the hood to rapidly develop apps and sites.
+
+```markdown
+# Addition
+
+Sometimes you need to `sum` two numbers:
+
+\`\`\`typescript
+/**
+ * Returns the sum of two numbers.
+ * @param {number} a - The first number to add
+ * @param {number} b - The second number to add
+ * @returns {number} The sum of a and b
+ * @example
+ * sum(2, 3)
+ * // returns 5
+ */
+export function sum(a: number, b: number): number {
+  return a + b
+}
+\`\`\`
+
+and make sure it works:
+
+\`\`\`typescript
+describe('sum', () => {
+  it('returns the sum of two positive numbers', () => {
+    expect(sum(2, 3)).toBe(5)
+  })
+
+  it('returns the sum of two negative numbers', () => {
+    expect(sum(-2, -3)).toBe(-5)
+  })
+
+  it('returns the sum when one number is zero', () => {
+    expect(sum(0, 4)).toBe(4)
+    expect(sum(7, 0)).toBe(7)
+  })
+
+  it('handles mixed positive and negative numbers', () => {
+    expect(sum(-2, 3)).toBe(1)
+    expect(sum(5, -8)).toBe(-3)
+  })
+})
+\`\`\`
+```
+
+And you can execute the tests:
+
+```bash
+mdxe test
+```
+
+and run the app which uses:
+
+```bash
+mdxe dev
+
+#  next dev --turbopack --port 3000
+
+#    ▲ Next.js 15.3.0 (Turbopack)
+#    - Local:        http://localhost:3000
+#    - Network:      http://192.168.6.6:3000
+
+#  ✓ Starting...
+#  ✓ Ready in 1995ms
+```
+
+And you can develop and deploy entire projects with `mdxe`:
+
+```json
+// package.json
+{
+  "scripts": {
+    "dev": "mdxe dev",
+    "build": "mdxe build",
+    "start": "mdxe start",
+    "test": "mdxe test",
+    "lint": "mdxe lint"
+  }
+}
+```
 
 ## [`mdxui`](./packages/mdxui) - UI Component Library for MDX
 
