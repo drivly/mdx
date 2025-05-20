@@ -8,7 +8,7 @@ import { join, resolve } from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
+import { isDirectory, isMarkdownFile, findIndexFile, resolveMdxPath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-utils.js'
 import { createTempNextConfig } from '../src/utils/temp-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -140,13 +140,13 @@ program
 
 if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].includes(arg))) {
   program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
-    const resolvedPath = resolvePath(path)
+    const resolvedPath = await resolveMdxPath(path)
     
     if (!resolvedPath && path !== '.') {
       console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
       console.error('Make sure the path exists and is either:')
       console.error('  - A .md or .mdx file')
-      console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
+      console.error('  - A directory containing index.md, index.mdx, or README.md')
       process.exit(1)
     }
     
