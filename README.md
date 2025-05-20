@@ -44,12 +44,12 @@ domain in literature without prior coordination or asking for permission.
 
 MDXE is a zero-config CLI that allows you to build, execute, test, and deploy code in Markdown & MDX files. It uses MDX, ESBuild, ESLint, Next.js, React, Velite, and Vitest under the hood to rapidly develop apps and sites.
 
-```markdown
+````markdown
 # Addition
 
 Sometimes you need to `sum` two numbers:
 
-\`\`\`typescript
+```typescript
 /**
  * Returns the sum of two numbers.
  * @param {number} a - The first number to add
@@ -62,11 +62,11 @@ Sometimes you need to `sum` two numbers:
 export function sum(a: number, b: number): number {
   return a + b
 }
-\`\`\`
+```
 
 and make sure it works:
 
-\`\`\`typescript
+```typescript
 describe('sum', () => {
   it('returns the sum of two positive numbers', () => {
     expect(sum(2, 3)).toBe(5)
@@ -86,8 +86,8 @@ describe('sum', () => {
     expect(sum(5, -8)).toBe(-3)
   })
 })
-\`\`\`
 ```
+````
 
 And you can execute the tests:
 
