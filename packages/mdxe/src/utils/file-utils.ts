@@ -46,8 +46,18 @@ export async function resolveMdxPath(slugPath: string): Promise<string | null> {
   console.log('User CWD:', userCwd)
   console.log('Slug path:', slugPath)
   
+  if (shouldExcludePath(slugPath)) {
+    console.log('Skipping excluded path:', slugPath)
+    return null
+  }
+  
   const absolutePath = resolve(userCwd, slugPath)
   console.log('Absolute path:', absolutePath)
+  
+  if (shouldExcludePath(absolutePath)) {
+    console.log('Skipping excluded absolute path:', absolutePath)
+    return null
+  }
   
   if (!existsSync(absolutePath)) {
     const withMdx = `${absolutePath}.mdx`
@@ -55,8 +65,8 @@ export async function resolveMdxPath(slugPath: string): Promise<string | null> {
     
     console.log('Checking with extensions:', withMdx, withMd)
     
-    if (existsSync(withMdx)) return withMdx
-    if (existsSync(withMd)) return withMd
+    if (existsSync(withMdx) && !shouldExcludePath(withMdx)) return withMdx
+    if (existsSync(withMd) && !shouldExcludePath(withMd)) return withMd
     
     return null
   }
@@ -73,21 +83,43 @@ export async function resolveMdxPath(slugPath: string): Promise<string | null> {
 }
 
 /**
+ * Check if a path should be excluded from processing
+ */
+export function shouldExcludePath(path: string): boolean {
+  const excludedDirs = ['node_modules', '.git', '.next', 'dist', 'build']
+  return excludedDirs.some(dir => path.includes(`/${dir}/`) || path.endsWith(`/${dir}`))
+}
+
+/**
  * Get all markdown files in a directory recursively
  */
 export async function getAllMarkdownFiles(dir: string): Promise<string[]> {
   const results: string[] = []
-  const files = await fs.readdir(dir)
   
-  for (const file of files) {
-    const filePath = join(dir, file)
-    const stat = await fs.stat(filePath)
+  try {
+    const files = await fs.readdir(dir)
     
-    if (stat.isDirectory()) {
-      results.push(...await getAllMarkdownFiles(filePath))
-    } else if (isMarkdownFile(filePath)) {
-      results.push(filePath)
+    for (const file of files) {
+      const filePath = join(dir, file)
+      
+      if (shouldExcludePath(filePath)) {
+        continue
+      }
+      
+      try {
+        const stat = await fs.stat(filePath)
+        
+        if (stat.isDirectory()) {
+          results.push(...await getAllMarkdownFiles(filePath))
+        } else if (isMarkdownFile(filePath)) {
+          results.push(filePath)
+        }
+      } catch (error) {
+        console.error(`Error processing file ${filePath}:`, error)
+      }
     }
+  } catch (error) {
+    console.error(`Error reading directory ${dir}:`, error)
   }
   
   return results
