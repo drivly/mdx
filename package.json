@@ -7,7 +7,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
     "check-types": "turbo run check-types",
-    "test": "echo \"No tests specified yet\" && exit 0",
+    "test": "turbo run test",
     "version": "changeset version",
     "release": "changeset publish"
   },
