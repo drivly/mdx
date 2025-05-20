@@ -3,14 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "mdxe dev",
-    "build": "mdxe build",
-    "start": "mdxe start",
-    "test": "mdxe test",
-    "lint": "mdxe lint"
+    "dev:examples": "mdxe dev",
+    "build:examples": "mdxe build",
+    "start:examples": "mdxe start",
+    "test:examples": "mdxe test",
+    "lint:examples": "mdxe lint"
   },
   "dependencies": {
-    "mdxe": "workspace:*",
-    "next": "^15.3.0"
+    "mdxe": "workspace:*"
   }
 }
