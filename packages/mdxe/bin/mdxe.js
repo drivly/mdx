@@ -11,6 +11,29 @@ import { dirname } from 'path'
 import { isDirectory, isMarkdownFile, findIndexFile, resolvePath, getAllMarkdownFiles, filePathToRoutePath } from '../src/utils/file-resolution.js'
 import { createTempNextConfig } from '../src/utils/temp-config.js'
 
+const openBrowser = (url) => {
+  let command
+  let args
+
+  if (process.platform === 'darwin') {
+    command = 'open'
+    args = [url]
+  } else if (process.platform === 'win32') {
+    command = 'cmd'
+    args = ['/c', 'start', '', url]
+  } else {
+    command = 'xdg-open'
+    args = [url]
+  }
+
+  const child = spawn(command, args, {
+    stdio: 'ignore',
+    detached: true,
+  })
+
+  child.unref()
+}
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -34,11 +57,11 @@ process.on('SIGINT', async () => {
   if (activeProcess) {
     activeProcess.kill('SIGINT')
   }
-  
+
   if (tempConfigInfo) {
     await tempConfigInfo.cleanup()
   }
-  
+
   process.exit(0)
 })
 
@@ -50,7 +73,7 @@ const runNextCommand = async (command, args = []) => {
   try {
     const readmePath = resolve(userCwd, 'README.md')
     const hasReadme = existsSync(readmePath)
-    
+
     const localNextBin = resolve(userCwd, 'node_modules', '.bin', 'next')
     const mdxeNextBin = resolve(mdxeRoot, 'node_modules', '.bin', 'next')
 
@@ -68,17 +91,17 @@ const runNextCommand = async (command, args = []) => {
     }
 
     console.log(`Running Next.js command: ${cmd} ${cmdArgs.join(' ')}`)
-    
+
     const isVercelDeployment = process.env.VERCEL === '1'
-    
+
     let nextDistDir = resolve(userCwd, '.next')
-    
+
     if (isVercelDeployment) {
       console.log('Vercel deployment detected. Ensuring .next directory is in project root.')
-      // Always use userCwd (the actual project root) instead of process.cwd() 
+      // Always use userCwd (the actual project root) instead of process.cwd()
       nextDistDir = resolve(userCwd, '.next')
     }
-    
+
     activeProcess = spawn(cmd, cmdArgs, {
       stdio: 'inherit',
       shell: true,
@@ -88,8 +111,8 @@ const runNextCommand = async (command, args = []) => {
         PAYLOAD_DB_PATH: resolve(userCwd, 'mdx.db'),
         NEXT_DIST_DIR: nextDistDir,
         USER_CWD: userCwd,
-        README_PATH: hasReadme ? readmePath : ''
-      }
+        README_PATH: hasReadme ? readmePath : '',
+      },
     })
 
     activeProcess.on('error', (error) => {
@@ -138,10 +161,31 @@ program
     await runNextCommand('lint')
   })
 
-if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].includes(arg))) {
+program
+  .command('notebook <file>')
+  .description('Launch interactive notebook viewer for a file')
+  .option('-p, --port <port>', 'Port to run the server on', '3000')
+  .option('-H, --hostname <hostname>', 'Hostname to run the server on', 'localhost')
+  .action(async (file, options) => {
+    const resolvedPath = resolvePath(file)
+
+    if (!resolvedPath) {
+      console.error(`Error: Could not resolve notebook file ${file}`)
+      process.exit(1)
+    }
+
+    const routePath = filePathToRoutePath(resolvedPath, process.cwd())
+    const url = `http://${options.hostname}:${options.port}${routePath}`
+
+    await runNextCommand('dev', [`--port=${options.port}`, `--hostname=${options.hostname}`])
+
+    setTimeout(() => openBrowser(url), 1000)
+  })
+
+if (!process.argv.slice(2).some((arg) => ['dev', 'build', 'start', 'lint', 'notebook'].includes(arg))) {
   program.argument('[path]', 'Path to a markdown file or directory', '.').action(async (path) => {
     const resolvedPath = resolvePath(path)
-    
+
     if (!resolvedPath && path !== '.') {
       console.error(`Error: Could not resolve path ${path} to a markdown file or directory with index file`)
       console.error('Make sure the path exists and is either:')
@@ -149,13 +193,13 @@ if (!process.argv.slice(2).some(arg => ['dev', 'build', 'start', 'lint'].include
       console.error('  - A directory containing index.md, index.mdx, page.md, page.mdx, or README.md')
       process.exit(1)
     }
-    
+
     if (resolvedPath) {
       console.log(`Serving markdown file: ${resolvedPath}`)
     } else {
       console.log('Starting MDX app with embedded CMS')
     }
-    
+
     await runNextCommand('dev')
   })
 }
