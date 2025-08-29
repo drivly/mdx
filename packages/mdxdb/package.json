@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@payloadcms/db-sqlite": "3.33.0",
-    "@payloadcms/next": "3.33.0",
+    "@payloadcms/next": "3.44.0",
     "@payloadcms/payload-cloud": "3.33.0",
     "@payloadcms/richtext-lexical": "3.33.0",
     "date-fns": "^4.1.0",
