@@ -45,10 +45,10 @@ export class CLI {
       if ((await fs.stat(targetPath).catch(() => null))?.isDirectory()) {
         const mdxFiles = await this.findMdxFiles(targetPath)
         for (const file of mdxFiles) {
-          await processFile(file, { ...mergedOptions, mode: 'generate' })
+          await processFile(file as string, { ...mergedOptions, mode: 'generate' })
         }
       } else {
-        await processFile(targetPath, { ...mergedOptions, mode: 'generate' })
+        await processFile(targetPath as string, { ...mergedOptions, mode: 'generate' })
       }
       console.log('Generation completed successfully')
     } catch (err) {
@@ -70,10 +70,10 @@ export class CLI {
       if ((await fs.stat(targetPath).catch(() => null))?.isDirectory()) {
         const mdxFiles = await this.findMdxFiles(targetPath)
         for (const file of mdxFiles) {
-          await processFile(file, { ...mergedOptions, mode: 'edit' })
+          await processFile(file as string, { ...mergedOptions, mode: 'edit' })
         }
       } else {
-        await processFile(targetPath, { ...mergedOptions, mode: 'edit' })
+        await processFile(targetPath as string, { ...mergedOptions, mode: 'edit' })
       }
       console.log('Edit completed successfully')
     } catch (err) {
@@ -100,7 +100,7 @@ export class CLI {
 
       console.log(`Found ${files.length} files to process`)
       for (const file of files) {
-        await processFile(file, mergedOptions)
+        await processFile(file as string, mergedOptions)
       }
       console.log('Batch processing completed successfully')
     } catch (err) {
