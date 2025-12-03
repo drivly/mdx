@@ -18,7 +18,7 @@
     "business-as-code": "^0.1.0",
     "functions.do": "^0.0.5",
     "mdxui": "workspace:*",
-    "next": "^15.3.0",
+    "next": "^15.4.8",
     "nextra": "^4.2.17",
     "nextra-theme-docs": "^4.2.17",
     "react": "^19.1.0",
