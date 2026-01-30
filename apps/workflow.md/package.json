@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "mdxui": "workspace:*",
-    "next": "^15.3.0",
+    "next": "^16.1.5",
     "nextra": "^4.2.17",
     "nextra-theme-docs": "^4.2.17",
     "react": "^19.1.0",
